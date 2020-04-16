@@ -43,26 +43,32 @@ function Grapher(id, options = {}, width = null, height = null) {
     this.options = {
         "data": [],
         "x": {
-            "name": "",
-            "scale": "scaleOrdinal",
-            "tickFormat": "",
+            "name": "x",
+            "scale": "scaleLinear",
+            "tickFormat": d3.format('.3s'),
             "parse": false,
-            "showLabel": ""
+            "showLabel": "",
+            "domain": null
         },
         "y": {
-            "name": "",
-            "scale": "scaleOrdinal",
-            "tickFormat": "",
+            "name": "y",
+            "scale": "scaleLinear",
+            "tickFormat": d3.format('.3s'),
             "parse": false,
-            "showLabel": ""
+            "showLabel": "",
+            "domain": ""
         },
-        "category": "",
+        "category": {
+            "name": "",
+            "parse": d => d
+        },
         "categories": [],
-        "type": "lines",
+        "type": "line",
         "style": {
             "colors": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
             "barWidth": 0.8,
             "stroke-width": 3,
+            "dot-size": 4,
             "grid": true,
             "tooltipColor": "#181818",
             "tooltipBackgroundColor": "#ffffff",
@@ -71,7 +77,7 @@ function Grapher(id, options = {}, width = null, height = null) {
         },
         "legend": {
             "hide": false,
-            "x": this.margin.left, 
+            "x": 15, 
             "y": this.margin.top,
             "distance": 25, // distance between dots
             "backgroundColor": "#ffffff",
@@ -81,7 +87,7 @@ function Grapher(id, options = {}, width = null, height = null) {
             "filename": `data_${this.id}_${Date.now()}.csv`
         }
     };
-    this.getCategoriesList = function(data=this.options.data,category=this.options.category) {
+    this.getCategoriesList = function(data=this.options.data,category=this.options.category.name) {
         this.options.categories = d3.set(data.map(d => d[category])).values();
     };
     this.parseData = function() {
@@ -90,8 +96,8 @@ function Grapher(id, options = {}, width = null, height = null) {
             for (const d of this.options.data) {
                 let _ = {};
                 _[this.options.x.name] = this.options.x.parse ? this.options.x.parse(d[this.options.x.name]) : d[this.options.x.name];
-                _[this.options.y.name] = this.options.y.parse ? this.options.y.parse(d[this.options.x.name]) : d[this.options.y.name];
-                _[this.options.category] =  d[this.options.category];
+                _[this.options.y.name] = this.options.y.parse ? this.options.y.parse(d[this.options.y.name]) : d[this.options.y.name];
+                _[this.options.category.name] =  d[this.options.category.name];
                 data.push(_);
             }
             this.options.data = data;
@@ -111,7 +117,7 @@ function Grapher(id, options = {}, width = null, height = null) {
                 }
             }
         }
-        if (this.options.categories.length == 0) {
+        if (! options.categories || this.options.categories.length == 0) {
             this.getCategoriesList();
         }
         this.color = d3.scaleOrdinal()
@@ -129,9 +135,10 @@ function Grapher(id, options = {}, width = null, height = null) {
     
     this._unique = function(arr) {
         if (arr.every(e => e instanceof Date)) {
-            return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r)));
+            let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
+            return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
         } else {
-            return Array.from(new Set(arr));
+            return Array.from(new Set(arr)).sort();
         }
     };
     this._getOptimalPrecision = (n) => `.${Math.abs(Math.floor(Math.log10((n > 0 ? n : 1))))+1}%`;
@@ -164,7 +171,7 @@ function Grapher(id, options = {}, width = null, height = null) {
         this.xRange = this.options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
         this.xNbTicks = d3.min([parseInt((this.width - 100) / 100), this.xNbValues]);
         this.x = d3[this.options.x.scale]()
-            .domain(this._extent(this.options.x.name, this.options.x.scale))
+            .domain((this.options.x.domain ? this.options.x.domain : this._extent(this.options.x.name, this.options.x.scale)))
             .nice()
             .range(this.xRange);
 
@@ -179,6 +186,7 @@ function Grapher(id, options = {}, width = null, height = null) {
         // add horizontal line to complete x axis when there is no grid
         if (!this.options.style.grid) {
             this.g.append("g")
+                .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.innerHeight + 0.5})`)
                 .attr("opacity","1")
                 .append('line')
@@ -205,7 +213,7 @@ function Grapher(id, options = {}, width = null, height = null) {
 
         // Define Y Axis
         this.y = d3[this.options.y.scale]()
-            .domain(this._extent(this.options.y.name, this.options.y.scale, this.options.type == "bar"))
+            .domain(this.options.y.domain ? this.options.y.domain : this._extent(this.options.y.name, this.options.y.scale, this.options.type == "bar"))
             .nice()
             .range([this.innerHeight, 0]);
 
@@ -221,6 +229,7 @@ function Grapher(id, options = {}, width = null, height = null) {
         // Add X axis at 0
         if (this.y.domain()[0] < 0 && this.options.type == "bar") {
             this.g.append("g")
+                .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.y(0)})`)
                 .attr("opacity","1")
                 .append('line')
@@ -256,11 +265,13 @@ function Grapher(id, options = {}, width = null, height = null) {
             this.updateOptions(options);
         }
         this.g.selectAll('path.lines').remove();
+        this.g.selectAll(`rect.bar`).remove();
+        this.g.selectAll(`circle.dots`).remove();
+        
         for (const category of this.options.categories) {
-            if (this.options.type == 'lines') {
-                this.g.selectAll(`rect.bar.${category.replace(/ /g,'_')}`).remove();
+            if (['line','dotted-line'].indexOf(this.options.type) > -1) {
                 this.g.append('path')
-                    .datum(this.options.data.filter(d => d[this.options.category] === category))
+                    .datum(this.options.data.filter(d => d[this.options.category.name] === category))
                     .attr('class','lines')
                     .attr('fill', 'none')
                     .attr('stroke', d => this.color(category))
@@ -269,9 +280,10 @@ function Grapher(id, options = {}, width = null, height = null) {
                           .y(d => this.y(d[this.options.y.name]))
                           .defined(d => d[this.options.y.name])
                           .x(d => this.x(d[this.options.x.name])));
-            } else {
+            };
+            if (this.options.type == "bar") {           
                 this.g.selectAll(`rect.bar.${category.replace(/ /g,'_')}`)
-                    .data(this.options.data.filter(d => d[this.options.category] === category))
+                    .data(this.options.data.filter(d => d[this.options.category.name] === category))
                     .join('rect')
                     .attr('class', `bar ${category.replace(/ /g,'_')}`)
                     .attr('fill',  d => this.color(category))
@@ -289,7 +301,17 @@ function Grapher(id, options = {}, width = null, height = null) {
                             return d3.rgb(d3.select(this).style("fill")).brighter(0.5);
                         });
                     });
-            }
+            };
+        };
+        if (['dotted-line','dot'].indexOf(this.options.type) > -1) {
+            this.g.selectAll("circle")
+                .data(this.options.data)
+                .join("circle")
+                .style("fill", d => this.color(d[this.options.category.name]))
+                .attr("class","dots")
+                .attr("r", this.options.style["dot-size"])
+                .attr("cx", (d, i) => this.x(d[this.options.x.name]))
+                .attr("cy", (d, i) => this.y(d[this.options.y.name]));
         };
     };
 
@@ -309,11 +331,11 @@ function Grapher(id, options = {}, width = null, height = null) {
               .attr("y1", 0)
               .attr("y2", this.innerHeight);
         
-        if (this.options.type == "lines") {
+        if (this.options.type != "bar") {
             const dots = g.selectAll("circle")
                   .data(data.slice(1))
                   .join("circle")
-                  .style("fill", d => this.color(d[this.options.category]))
+                  .style("fill", d => this.color(d[this.options.category.name]))
                   .attr("r", 5)
                   .attr("cx", (d, i) => this.x(d[this.options.x.name]))
                   .attr("cy", (d, i) => this.y(d[this.options.y.name]));
@@ -336,8 +358,8 @@ function Grapher(id, options = {}, width = null, height = null) {
                     .attr("y", (d, i) => `${i * 1.1}em`)
                     .attr("class","tooltip_text")
                     .style("font-weight","bold")
-                    .style("fill",(d, i) => i === 0 ? this.options.style.tooltipColor : this.color(d[this.options.category]))
-                    .text((d,i) => i === 0 ? this.options.x.tickFormat(d) : `${d[this.options.category]}: ${this.options.y.tickFormat(d[this.options.y.name])}`));
+                    .style("fill",(d, i) => i === 0 ? this.options.style.tooltipColor : this.color(d[this.options.category.name]))
+                    .text((d,i) => i === 0 ? this.options.x.tickFormat(d) : `${this.options.category.parse(d[this.options.category.name])}: ${this.options.y.tickFormat(d[this.options.y.name])}`));
         const {xx, yy, width: w, height: h} = text.node().getBBox();
 
         // Make sure the tooltip is always in the graph area (and visible)
@@ -360,6 +382,8 @@ function Grapher(id, options = {}, width = null, height = null) {
             a = mouseIndex > 0 ? this.xValues[mouseIndex - 1] : 0,
             b = mouseIndex > this.xValues.length - 1 ? this.xValues.slice(-1)[0] : this.xValues[mouseIndex];
         // We get value before mouseIndex and at mouseIndex to find out to which value mouse is the closest;
+
+        // console.log(mouseXValue_, mouseIndex, a, b);
         let mouseXValue = mouseXValue_ - a > b - mouseXValue_ ? b : a,
             mouseYValues = this.options.data.filter(d => d[this.options.x.name].toString() == mouseXValue.toString())
             .sort((a,b) => b[this.options.y.name] - a[this.options.y.name]);
@@ -370,7 +394,6 @@ function Grapher(id, options = {}, width = null, height = null) {
         if (options) {
             this.updateOptions(options);
         }
-
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
         let that = this;
@@ -419,7 +442,7 @@ function Grapher(id, options = {}, width = null, height = null) {
             .attr("x", this.options.legend.x + 30)
             .attr("y", (d,i) => this.options.legend.y + i * this.options.legend.distance)
             .style("fill", d => this.color(d))
-            .text(t => t)
+            .text(t => this.options.category.parse(t))
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
             .attr('class','labels-legend');
@@ -465,14 +488,13 @@ function Grapher(id, options = {}, width = null, height = null) {
             this.addX2();
         }
         this.addY();
-
-        // Add content
+        
+        // Add content      
         this._drawContent();
 
         // Add tooltip & legend
         this.addTooltip();
         this.addLegend();
-                  
     };
 
     // Download data

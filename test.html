@@ -44,12 +44,15 @@
              "y": {
                  "name": "value",
                  "scale": "scaleLinear",
-                 "tickFormat": d3.format('.3s')
+                 "tickFormat": d3.format('.3s'),
+                 "domain": [-5, 10]
              },
-             "category": "Country/Region",
-             "type": "lines",
+             "category": {
+                 "name":"Country/Region"
+             },
+             "type": "line",
              "style": {
-                 "grid": false
+                 "grid": true
              }
          }
          let myGraph = new Grapher("myPlot", options);
@@ -57,7 +60,7 @@
 
          function switchBarLine() {
              if (myGraph.options.type == "bar") {
-                 myGraph.draw({"type":"lines"});
+                 myGraph.draw({"type":"dotted-line"});
              } else {
                  myGraph.draw({"type":"bar"})
              }
