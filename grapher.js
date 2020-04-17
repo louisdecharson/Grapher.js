@@ -11,34 +11,58 @@ function Grapher(id, options = {}, width = null, height = null) {
     this.width = width ? width : this.el.offsetWidth;
     this.height = height ? height : this.el.offsetHeight;
 
-    // Setting margin
-    this.margin = {};
-    this.margin.top = 10;
-    this.margin.right = this.width < 400 ? 20 : 30,
-    this.margin.bottom = 30;
-    this.margin.left = this.width < 400 ? 40 : 60;
-
-    // Setting inner width and inner height (without axes)
-    this.innerWidth = this.width - this.margin.left - this.margin.right;
-    this.innerHeight = this.height - this.margin.top - this.margin.bottom;
-
-    // Creating the svg
+    // Add svg
     this.svg = d3.select(`#${this.id}`)
         .append("svg")
         .attr("id", this.id + '_svg')
         .attr("width", this.width)
         .attr("height", this.height);
-    this.g = this.svg.append("g")
-        .attr('id', this.id + '_g')
-        .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
 
+
+    // Setting margin
+    this._setMargin = function({top=10,
+                                right=((x) => x < 400 ? 20 : 30),
+                                bottom=30,
+                                left=(x) => x < 400 ? 40 : 60}={}) {
+        this.margin = {};
+        this.margin.top = top;
+        this.margin.right = typeof right == "function" ? right(this.width) : right;
+        this.margin.bottom = 30;
+        this.margin.left = typeof left == "function" ? left(this.width) : left;
+
+        this._innerDimensions(); 
+    };
+    
+    
+    // Setting inner width and inner height (without axes)
+    this._innerDimensions = function() {
+        this.innerWidth = this.width - this.margin.left - this.margin.right;
+        this.innerHeight = this.height - this.margin.top - this.margin.bottom;
+
+        this._createSVG();
+    };
+    
+    // Creating the svg
+    this._createSVG = function() {
+        this.svg.select(`#${this.id}_g`).remove();
+        this.g = this.svg.append("g")
+            .attr('id', this.id + '_g')
+            .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+        
+        this._addOverlay();
+    };
+    
     // Add overlay for focus & tooltip
-    this.g.append("rect")
-        .attr("class", "overlay")
-        .attr("width", this.innerWidth)
-        .attr("height", this.innerHeight);
+    this._addOverlay = function() {
+        this.g.append("rect")
+            .attr("class", "overlay")
+            .attr("width", this.innerWidth)
+            .attr("height", this.innerHeight);
+    };
 
-
+    //
+    this._setMargin();
+    
     // Default-Options
     this.options = {
         "data": [],
@@ -47,7 +71,7 @@ function Grapher(id, options = {}, width = null, height = null) {
             "scale": "scaleLinear",
             "tickFormat": d3.format('.3s'),
             "parse": false,
-            "showLabel": "",
+            "label": false,
             "domain": null
         },
         "y": {
@@ -55,7 +79,7 @@ function Grapher(id, options = {}, width = null, height = null) {
             "scale": "scaleLinear",
             "tickFormat": d3.format('.3s'),
             "parse": false,
-            "showLabel": "",
+            "label": false,
             "domain": ""
         },
         "category": {
@@ -125,6 +149,9 @@ function Grapher(id, options = {}, width = null, height = null) {
             .range(this.options.style.colors);
 
         this.parseData();
+
+        this._setMargin({bottom:(this.options.x.label ? 60 : 30),
+                         left:(this.options.y.label ? 80 : 60)});
         
     };
     
@@ -195,6 +222,18 @@ function Grapher(id, options = {}, width = null, height = null) {
         }
     };
 
+    this.addXLabel = function(options=null) {
+        // Add Title for X axis
+        if (options) {
+            this.updateOptions(options);
+        }
+        this.g.append("text")
+            .attr("class","xLabel axisLabel")
+            .attr("transform", `translate(${this.innerWidth/2},${this.height-this.margin.bottom/2})`)
+            .style("text-anchor","middle")
+            .text(this.options.x.label);
+    };
+
     this.addX2 = function(options=null) {
         // Second X-axis in case of bars
         if (options) {
@@ -258,6 +297,21 @@ function Grapher(id, options = {}, width = null, height = null) {
         this.g.append("g")
             .attr('class','yGrid')
             .call(this.yGrid);
+    };
+
+    this.addYLabel = function(options=null) {
+        // Add Title for X axis
+        if (options) {
+            this.updateOptions(options);
+        }
+        this.g.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left)
+            .attr("x",0 - (this.innerHeight / 2))
+            .attr("dy", "1em")
+            .attr("class","yLabel axisLabel")
+            .style("text-anchor", "middle")
+            .text(this.options.y.label);   
     };
 
     this._drawContent =  function(options=null) {
@@ -476,6 +530,8 @@ function Grapher(id, options = {}, width = null, height = null) {
             this.updateOptions(options);
         }
 
+        this._setMargin();
+        
         // Clean
         this.g.selectAll('g.x.axis').remove();
         this.g.selectAll('g.y.axis').remove();
@@ -487,7 +543,13 @@ function Grapher(id, options = {}, width = null, height = null) {
         if (this.options.type == "bar") {
             this.addX2();
         }
+        if (this.options.x.label) {
+            this.addXLabel();
+        }
         this.addY();
+        if (this.options.y.label) {
+            this.addYLabel();
+        }
         
         // Add content      
         this._drawContent();

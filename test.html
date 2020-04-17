@@ -10,7 +10,7 @@
          }
          #myPlot {
              width: 1000px;
-             height: 300px;
+             height: 500px;
              border: 1px solid #ccc;
          }
         </style>
@@ -39,13 +39,15 @@
                  "name":"date",
                  "scale": "scaleTime",
                  "tickFormat": d3.timeFormat("%d/%m/%y"),
-                 "parse": (d) => new Date(d)
+                 "parse": (d) => new Date(d),
+                 "label": "Date"
              },
              "y": {
                  "name": "value",
                  "scale": "scaleLinear",
                  "tickFormat": d3.format('.3s'),
-                 "domain": [-5, 10]
+                 "domain": [-5, 10],
+                 "label": "Value"
              },
              "category": {
                  "name":"Country/Region"
