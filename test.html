@@ -13,6 +13,10 @@
              height: 500px;
              border: 1px solid #ccc;
          }
+         button {
+             margin-top: 10px;
+             margin-bottom: 10px;
+         }
         </style>
     </head>
     <body>
@@ -20,6 +24,14 @@
         <h2>My Graph</h2>
         <button onclick="switchBarLine()">Switch bar / lines</button>
         <div id="myPlot"></div>
+
+        <hr/>
+        <h2>Edward Tufte's sparkline</h2>
+        <div id="mySparkline"></div>
+
+        <hr/>
+        <h2>No Category</h2>
+        <div id="plotNoCategory"></div>
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js" integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y=" crossorigin="anonymous"></script>
         <script src="./grapher.js"></script>
@@ -31,7 +43,9 @@
                  {"value":-3,"Country/Region":"Italy","date":"2020-01-21T23:00:00.000Z"},
                  {"value":3,"Country/Region":"Italy","date":"2020-01-22T23:00:00.000Z"},
                  {"value":4,"Country/Region":"Italy","date":"2020-01-23T23:00:00.000Z"},
-                 {"value":10,"Country/Region":"Italy","date":"2020-01-24T23:00:00.000Z"}]
+                 {"value":10,"Country/Region":"Italy","date":"2020-01-24T23:00:00.000Z"}];
+
+         dataSpark = [{'date': '2020-01-01', 'value': 170}, {'date': '2020-01-02', 'value': 134}, {'date': '2020-01-03', 'value': 115}, {'date': '2020-01-04', 'value': 128}, {'date': '2020-01-05', 'value': 168}, {'date': '2020-01-06', 'value': 166}, {'date': '2020-01-07', 'value': 122}, {'date': '2020-01-08', 'value': 81}, {'date': '2020-01-09', 'value': 56}, {'date': '2020-01-10', 'value': 39}, {'date': '2020-01-11', 'value': 97}, {'date': '2020-01-12', 'value': 114}, {'date': '2020-01-13', 'value': 114}, {'date': '2020-01-14', 'value': 130}, {'date': '2020-01-15', 'value': 151}, {'date': '2020-01-16', 'value': 184}, {'date': '2020-01-17', 'value': 148}, {'date': '2020-01-18', 'value': 145}, {'date': '2020-01-19', 'value': 134}, {'date': '2020-01-20', 'value': 145}, {'date': '2020-01-21', 'value': 145}, {'date': '2020-01-22', 'value': 145}, {'date': '2020-01-23', 'value': 143}, {'date': '2020-01-24', 'value': 148}, {'date': '2020-01-25', 'value': 224}, {'date': '2020-01-26', 'value': 181}, {'date': '2020-01-27', 'value': 112}, {'date': '2020-02-01', 'value': 111}, {'date': '2020-02-02', 'value': 129}, {'date': '2020-02-03', 'value': 151}, {'date': '2020-02-04', 'value': 131}, {'date': '2020-02-05', 'value': 131}, {'date': '2020-02-06', 'value': 131}, {'date': '2020-02-07', 'value': 114}, {'date': '2020-02-08', 'value': 112}, {'date': '2020-02-09', 'value': 112}, {'date': '2020-02-10', 'value': 112}, {'date': '2020-02-11', 'value': 124}, {'date': '2020-02-12', 'value': 187}, {'date': '2020-02-13', 'value': 202}, {'date': '2020-02-14', 'value': 200}, {'date': '2020-02-15', 'value': 203}, {'date': '2020-02-16', 'value': 237}, {'date': '2020-02-17', 'value': 263}, {'date': '2020-02-18', 'value': 221}, {'date': '2020-02-19', 'value': 197}, {'date': '2020-02-20', 'value': 184}, {'date': '2020-02-21', 'value': 185}, {'date': '2020-02-22', 'value': 203}, {'date': '2020-02-23', 'value': 290}, {'date': '2020-02-24', 'value': 330}, {'date': '2020-02-25', 'value': 330}, {'date': '2020-02-26', 'value': 226}, {'date': '2020-02-27', 'value': 113}, {'date': '2020-03-01', 'value': 148}, {'date': '2020-03-02', 'value': 169}, {'date': '2020-03-03', 'value': 148}, {'date': '2020-03-04', 'value': 78}, {'date': '2020-03-05', 'value': 96}, {'date': '2020-03-06', 'value': 96}, {'date': '2020-03-07', 'value': 96}, {'date': '2020-03-08', 'value': 77}, {'date': '2020-03-09', 'value': 59}, {'date': '2020-03-10', 'value': 22}, {'date': '2020-03-11', 'value': 22}, {'date': '2020-03-12', 'value': 70}, {'date': '2020-03-13', 'value': 110}, {'date': '2020-03-14', 'value': 128}]
 
          let options = {
              "data": data,
@@ -67,6 +81,47 @@
                  myGraph.draw({"type":"bar"})
              }
          }
+
+         let mySparkline = new Grapher("mySparkline",
+                                       {"data": dataSpark,
+                                        "x": {
+                                            "name": "date",
+                                            "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                        },
+                                        "y": {
+                                            "name": "value",
+                                            "tickFormat": d3.format('.3s'),
+                                            "label": "Glucose"
+                                        },
+                                        "type": "sparkline",
+                                        "sparkline": {
+                                            "range": [82, 180]
+                                        }
+                                       },
+                                       150,
+                                       25
+         );
+         mySparkline.draw();
+
+         let plotNoCategory = new Grapher("plotNoCategory",
+                                          {"data": dataSpark,
+                                           "x": {
+                                               "name": "date",
+                                               "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                               "tickFormat": d3.timeFormat("%d/%m/%y")
+                                           },
+                                           "y": {
+                                               "name": "value",
+                                               "tickFormat": d3.format('.3s'),
+                                               "label": "Glucose"
+                                           },
+                                           "type": "dotted-line"
+                                          },
+                                          1000,
+                                          400
+         );
+         plotNoCategory.draw();
+         
         </script>
     </body>
 </html>

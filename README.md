@@ -1,6 +1,6 @@
 # Grapher
 
-Grapher is a wrapper around [D3.js](https://d3js.org).
+Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, bar plots and [sparklines](https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR).
 
 ## Installation
 
