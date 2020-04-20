@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css">
+        <style>
+         body {
+             margin-top: 3%;
+         }
+         .pre {
+             margin: 0 !important;
+         }
+         span.badge.badge-pill {
+             font-size: 0.6rem !important;
+         }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+        
+    </head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <h1 class="display-4">Grapher</h1>
+                <p class="lead">Grapher is a minimal wrapper around <a href="https://d3js.org">D3.js</a> to do line plots, bar plots and <a href="https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR">sparklines.</a></p>
+                </p>
+                <hr class="my-4">
+                <a class="btn btn-primary btn-sm" href="#GetStarted" role="button">Get started</a>
+                <a class="btn btn-dark btn-sm" href="https://github.com/louisdecharson/Grapher" role="button">View code</a>
+            </div>
+
+            <div id="GetStarted">
+
+                <h2>Installation</h2>
+                <p>Download the latest version of the <a href="https://github.com/louisdecharson/Grapher/releases/latest">grapher.js</a>. You'll also need <a href="">D3.js</a> to be included before.
+                    <pre>
+                        <code class="html">
+&lt;html>
+    &lt;body>
+        &lt;script src="/path/to/d3.v5.min.js">&lt;/script>
+        &lt;script src="/path/to/grapher.js">&lt;/script>
+   &lt;/body>
+&lt;/html>
+                        </code>
+                    </pre>
+                </p>
+
+                <h2>Create a chart</h2>
+                <p>You <strong>initiate</strong> a chart by creating a <code>Grapher</code> object</p>.
+                <pre>
+                    <code class="js">
+let myGraph = new Grapher(id, options, width, height);
+                    </code>
+                </pre>
+                A Grapher object takes four arguments:
+                <ul>
+                    <li><code>id</code>: the DOM element that it should be bound to</li>
+                    <li><code>options</code>: a JSON with the configuration (see below)</li>
+                    <li><code>width</code>: width of the DOM element (optional if the element already has a non-null width)</li>
+                    <li><code>height</code>: height of the DOM element (optional if the element already has a non-null height)</li>                    
+                </ul>
+                <p>You <strong>draw</strong> a chart by calling the methode <code>.draw()</code>
+                    <code style=display:block;white-space:pre-wrap>
+myGraph.draw()
+                    </code>
+                </p>
+
+                <h4>Example</h4>
+                <pre>
+                    <code class="html">
+&lt;html>
+    &lt;body>
+        &lt;div id="myGraphExample1" style="height:400px;width:auto;">&lt;/div>
+
+        &lt;script src="/path/to/d3.v5.min.js">&lt;/script>
+        &lt;script src="/path/to/grapher.js">&lt;/script>
+
+        &lt;script>
+        let data = [{'date': '2020-01-01', 'value': 143},
+                    {'date': '2020-01-02', 'value': 134},
+                    {'date': '2020-01-03', 'value': 115},
+                    {'date': '2020-01-04', 'value': 128},
+                    {'date': '2020-01-05', 'value': 168}];
+
+        let myGraphExample1 = new Grapher('myGraphExample1',
+                                  {"data": data,
+                                   "x": {
+                                        "name": "date",
+                                        "scale": "scaleTime",
+                                        "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                        "tickFormat": d3.timeFormat("%d/%m/%y"),
+                                        "label": "Date"
+                                    },
+                                    "y": {
+                                        "name": "value",
+                                        "tickFormat": d3.format('.3s'),
+                                        "label": "Glucose"
+                                    },
+                                    "type": "dotted-line",
+                                    });
+        myGraphExample1.draw()
+        &lt;/script>
+   &lt;/body>
+&lt;/html>
+                    </code>
+                </pre>
+                <div id="myGraphExample1" style="height:400px;width:auto;"></div>
+                <hr>
+                <h2>Documentation</h2>
+                <p>Configuration happens in the second argument, <code>options</code>, of the Grapher object. </p>
+                <h4><code>options</code> Object</h4>
+                <p>The <code>options</code> object let you defines the data, axis, type of chart and style options. Below is the full list of options available:</p>
+                <ul>
+                    <li><code>data</code>: an array of JSON objects (like in the example above), containing at least the variables for x and y axis.
+                        <span class="badge badge-pill badge-warning ml-1 mr-1">required</span>
+                    </li>
+                    <li><code>x</code>
+                        <ul>
+                            <li><code>name</code><span class="badge badge-pill badge-warning ml-1 mr-1">required</span>:
+                                name of the x axis variable in the array <code>data</code>.</li>
+                            <li><code>scale</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                a <a href="https://github.com/d3/d3-scale">d3-scale</a>, default is <code>scaleLinear</code>. You'll probably want to use <code>scaleLinear</code> or <code>scaleTime</code>.
+                            </li>
+                            <li><code>tickFormat</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                <a href="https://github.com/d3/d3-scale/blob/master/README.md#tickFormat">d3.tickFormat</a>.
+                            </li>
+                            <li><code>parse</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                function to parse the variable's data. Usual example is when you are working with dates: <code>(d) => d3.timeParse('%Y-%m-%d')(d)</code>.
+                            </li>
+                            <li><code>label</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: name of the x-axis label.
+                            </li>
+                            <li><code>domain</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: domain for the x-axis, default is to use max and min values of data.
+                            </li>
+                        </ul>
+                    </li>
+                    <li><code>y</code>
+                        <ul>
+                            <li><code>name</code>
+                                <span class="badge badge-pill badge-warning ml-1 mr-1">required</span>
+                                name of the y axis variable in the array <code>data</code>.
+                            </li>
+                            <li><code>scale</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                a <a href="https://github.com/d3/d3-scale">d3-scale</a>, default is <code>scaleLinear</code>.
+                            </li>
+
+                            <li><code>tickFormat</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                <a href="https://github.com/d3/d3-scale/blob/master/README.md#tickFormat">d3.tickFormat</a>.
+                            </li>
+
+                            <li><code>parse</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: function to parse the variable's data.
+                            </li>
+                            <li><code>label</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: name of the y-axis label.
+                            </li>
+                            <li><code>domain</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: domain for the y-axis, default is to use max and min values of data.
+                            </li>
+                        </ul>
+                    </li>
+                    <li><code>category</code>
+                        <div class="text-muted font-italic" style="font-size: 0.8rem;">category is the third dimension to be used when you want to plot multiple lines / bars.</div>
+                        <ul>
+                            <li><code>name</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                name of the variable in the data array. If not specified, the y-axis will be used for the legend.
+                            </li>
+                            <li><code>parse</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: function to parse the variable.
+                            </li>
+                        </ul>
+                    </li>
+                    <li><code>type</code><span class="badge badge-pill badge-warning ml-1 mr-1">required</span>: type of plot. Available options are : <code>line</code>, <code>bar</code>, <code>dotted-line</code>, <code>sparkline</code>.
+                    </li>
+                    <li><code>style</code>
+                        <ul>
+                            <li><code>colors</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>:
+                                Array of colors to be used for lines / bars.
+                            </li>
+                            <li><code>barWidth</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                proportion of the width, the bars should use. Default is 0.8 (80%), to have space between each bars.
+                            </li>
+                            <li><code>dot-size</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                size in px of the dots.
+                            </li>
+                            <li><code>grid</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                boolean whether to display a y-axis grid. Default is <code>true</code>.
+                            </li>
+                            <li><code>tooltipColor</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                font-color of text in the tooltip.
+                            </li>
+                            <li><code>tooltipBackgroundColor</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                tooltip's background color.
+                            </li>
+                            <li><code>tooltipOpacity</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                tooltip's opacity.
+                            </li>
+                            <li><code>tooltipLineColor</code>
+                                <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
+                                tooltip's vertical line color.
+                            </li>
+                        </ul>
+                    </li>
+                    <li><code>legend</code>
+                        <ul>
+                            <li><code>hide</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: boolean. set to <code>true</code> to hide the legend. Default is <code>false</code>.</li>
+                            <li><code>x</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: x-position of the legend in the svg.</li>
+                            <li><code>x</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: y-position of the legend in the svg.</li>
+                            <li><code>distance</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: distance between elements of the legend</li>
+                            <li><code>backgroundColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: background color of the legend.</li>
+                            <li><code>opacity</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: opacity of the legend.</li>
+                        </ul>
+                    </li>
+                    <li><code>download</code>
+                        <div class="text-muted font-italic" style="font-size: 0.8rem;">Grapher exposes a <code>downloadData</code> method that will download the data associated as a csv file.</div>
+                        <ul>
+                            <li><code>filename</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: filename to be used for the csv.</li>
+                        </ul>
+                    </li>
+                    <li><code>sparkline</code>
+                        <div class="text-muted font-italic" style="font-size: 0.8rem;">From an original idea of <a href="https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR">Edward Tufte.</a></div>
+                        <ul>
+                            <li><code>textLastPoint</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: boolean to display the last value at the end of the plot</li>
+                            <li><code>stroke-width</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: stroke width of the spark line</li>
+                            <li><code>line-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: sparkline's line color.</li>
+                            <li><code>circle-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value circle's color</li>
+                            <li><code>text-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text color.</li>
+                            <li><code>text-font-size</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font size.</li>
+                            <li><code>text-font-weight</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font weight.</li>
+                            <li><code>range</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: array of min and max values for the "usual" range of values.</li>
+                            <li><code>range-fill-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: fill color for the range.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <h2>FAQ</h2>
+
+                <h4>Why is there so few options available ?</h4>
+                <p>The idea of the library is to have a minimal library with convenient defaults to make line plot, bar charts or sparklines. If you need a more comprehensive library, there are plenty of alternatives: <a href="http://d3js.org/">D3.js</a>, <a href="http://c3js.org">C3.js</a>, <a href="http://plot.ly">plot.ly</a>, <a href="http://chartjs.org">Chart.js</a>.</p>
+            </div>
+
+            
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js" integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y=" crossorigin="anonymous"></script>
+        <script src="./grapher.js"></script>
+        <script>
+         let dataExample1 = [{'date': '2020-01-01', 'value': 143},
+                             {'date': '2020-01-02', 'value': 134},
+                             {'date': '2020-01-03', 'value': 115},
+                             {'date': '2020-01-04', 'value': 128},
+                             {'date': '2020-01-05', 'value': 168}]
+         let myGraphExample1 = new Grapher('myGraphExample1',
+                                           {"data": dataExample1,
+                                            "x": {
+                                                "name": "date",
+                                                "scale": "scaleTime",
+                                                "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                                "tickFormat": d3.timeFormat("%d/%m/%y"),
+                                                "label": "Date"
+                                            },
+                                            "y": {
+                                                "name": "value",
+                                                "tickFormat": d3.format('.3s'),
+                                                "label": "Glucose"
+                                            },
+                                            "type": "dotted-line",
+         });
+         myGraphExample1.draw()
+        </script>
+        
+    </body>
+</html>
