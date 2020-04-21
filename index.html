@@ -73,7 +73,7 @@ myGraph.draw()
                             </code>
                         </p>
 
-                        <h2>Examples</h2>
+                        <h2 class="mb-4">Examples</h2>
                         
                         <h4>Line chart</h4>
                         <pre>
@@ -116,6 +116,72 @@ myGraph.draw()
                         </pre>
                         <div id="myGraphExample1" style="height:400px;width:auto;"></div>
                         <hr>
+
+                        <h4>Bar chart</h4>
+                        <pre>
+                            <code class="javascript">
+        let data = [{"value":3,"Country/Region":"France","date":"2020-01-21T23:00:00.000Z"},
+                    {"value":1,"Country/Region":"France","date":"2020-01-22T23:00:00.000Z"},
+                    {"value":4,"Country/Region":"France","date":"2020-01-23T23:00:00.000Z"},
+                    {"value":7,"Country/Region":"France","date":"2020-01-24T23:00:00.000Z"},
+                    {"value":-3,"Country/Region":"Italy","date":"2020-01-21T23:00:00.000Z"},
+                    {"value":3,"Country/Region":"Italy","date":"2020-01-22T23:00:00.000Z"},
+                    {"value":4,"Country/Region":"Italy","date":"2020-01-23T23:00:00.000Z"},
+                    {"value":10,"Country/Region":"Italy","date":"2020-01-24T23:00:00.000Z"}];
+
+        let myGraphExample2 = new Grapher('myGraphExample1',
+                                  {"data": data,
+                                   "x": {
+                                        "name": "date",
+                                        "scale": "scaleTime",
+                                        "parse": (d) => new Date(d),
+                                        "tickFormat": d3.timeFormat("%d/%m/%y"),
+                                        "label": "Date"
+                                    },
+                                    "y": {
+                                        "name": "value",
+                                    },
+                                    "category": {
+                                        "name": "Country/Region",
+                                    },
+                                    "type": "bar",
+                                    });
+        myGraphExample2.draw()
+                            </code>
+                        </pre>
+                        <div id="myGraphExample2" style="height:400px;width:auto;"></div>
+                        <hr>
+
+                        <h4>Sparkline</h4>
+                        <pre>
+                            <code class="javascript">
+        let mySparkline = new Grapher("mySparkline",
+                                       {"data": dataSpark,
+                                        "x": {
+                                            "name": "date",
+                                            "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                        },
+                                        "y": {
+                                            "name": "value",
+                                            "tickFormat": d3.format('.3s'),
+                                            "label": "Glucose"
+                                        },
+                                        "type": "sparkline",
+                                        "sparkline": {
+                                            "range": [82, 180]
+                                        }
+                                       },
+                                       150,
+                                       25
+         );
+         mySparkline.draw();
+                            </code>
+                        </pre>
+                        This an example of the famous Edward Tufte's sparkline: <span id="mySparkline"></span>
+                        
+
+                        <!-- DOCUMENTATION -->
+                        <hr/>
                         <h2>Documentation</h2>
                         <p>Configuration happens in the second argument, <code>options</code>, of the Grapher object. </p>
                         <h4><code>options</code> Object</h4>
@@ -186,7 +252,7 @@ myGraph.draw()
                                         <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
                                         proportion of the width, the bars should use. Default is 0.8 (80%), to have space between each bars.
                                     </li>
-                                    <li><code>dot-size</code>
+                                    <li><code>dotSize</code>
                                         <span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>
                                         size in px of the dots.
                                     </li>
@@ -217,7 +283,7 @@ myGraph.draw()
                                     <li><code>hide</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: boolean. set to <code>true</code> to hide the legend. Default is <code>false</code>.</li>
                                     <li><code>x</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: x-position of the legend in the svg.</li>
                                     <li><code>x</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: y-position of the legend in the svg.</li>
-                                    <li><code>distance</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: distance between elements of the legend</li>
+                                    <li><code>interstice</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: distance between elements of the legend</li>
                                     <li><code>backgroundColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: background color of the legend.</li>
                                     <li><code>opacity</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: opacity of the legend.</li>
                                 </ul>
@@ -232,19 +298,20 @@ myGraph.draw()
                                 <div class="text-muted font-italic" style="font-size: 0.8rem;">From an original idea of <a href="https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR">Edward Tufte.</a></div>
                                 <ul>
                                     <li><code>textLastPoint</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: boolean to display the last value at the end of the plot</li>
-                                    <li><code>stroke-width</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: stroke width of the spark line</li>
-                                    <li><code>line-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: sparkline's line color.</li>
-                                    <li><code>circle-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value circle's color</li>
-                                    <li><code>text-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text color.</li>
-                                    <li><code>text-font-size</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font size.</li>
-                                    <li><code>text-font-weight</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font weight.</li>
+                                    <li><code>strokeWidth</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: stroke width of the spark line</li>
+                                    <li><code>lineColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: sparkline's line color.</li>
+                                    <li><code>circleColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value circle's color</li>
+                                    <li><code>textColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text color.</li>
+                                    <li><code>textFontSize</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font size.</li>
+                                    <li><code>textFontWeight</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: last value's text font weight.</li>
                                     <li><code>range</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: array of min and max values for the "usual" range of values.</li>
-                                    <li><code>range-fill-color</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: fill color for the range.</li>
+                                    <li><code>rangeFillColor</code><span class="badge badge-pill badge-secondary ml-1 mr-1">optional</span>: fill color for the range.</li>
                                 </ul>
                             </li>
                         </ul>
-                        <h2>FAQ</h2>
 
+                        <hr/>
+                        
                         <h4>See also</h4>
                         <p> The library is designed to be minimal with convenient defaults to make a line plot, a bar charts or a sparkline as easy as possible. If you need a more comprehensive library, there are plenty of alternatives: <a href="http://d3js.org/">D3.js</a>, <a href="http://c3js.org">C3.js</a>, <a href="http://plot.ly">plot.ly</a>, <a href="http://chartjs.org">Chart.js</a>.</p>
                         
@@ -284,6 +351,58 @@ myGraph.draw()
                                             "type": "dotted-line",
          });
          myGraphExample1.draw()
+
+         let dataExample2 = [{"value":3,"Country/Region":"France","date":"2020-01-21T23:00:00.000Z"},
+                             {"value":1,"Country/Region":"France","date":"2020-01-22T23:00:00.000Z"},
+                             {"value":4,"Country/Region":"France","date":"2020-01-23T23:00:00.000Z"},
+                             {"value":7,"Country/Region":"France","date":"2020-01-24T23:00:00.000Z"},
+                             {"value":-3,"Country/Region":"Italy","date":"2020-01-21T23:00:00.000Z"},
+                             {"value":3,"Country/Region":"Italy","date":"2020-01-22T23:00:00.000Z"},
+                             {"value":4,"Country/Region":"Italy","date":"2020-01-23T23:00:00.000Z"},
+                             {"value":10,"Country/Region":"Italy","date":"2020-01-24T23:00:00.000Z"}];
+
+         let myGraphExample2 = new Grapher('myGraphExample2',
+                                           {"data": dataExample2,
+                                            "x": {
+                                                "name": "date",
+                                                "scale": "scaleTime",
+                                                "parse": (d) => new Date(d),
+                                                "tickFormat": d3.timeFormat("%d/%m/%y"),
+                                                "label": "Date"
+                                            },
+                                            "y": {
+                                                "name": "value",
+                                            },
+                                            "category": {
+                                                "name": "Country/Region",
+                                            },
+                                            "type": "bar",
+         });
+         myGraphExample2.draw()
+
+         let dataSpark = [{'date': '2020-01-01', 'value': 170}, {'date': '2020-01-02', 'value': 134}, {'date': '2020-01-03', 'value': 115}, {'date': '2020-01-04', 'value': 128}, {'date': '2020-01-05', 'value': 168}, {'date': '2020-01-06', 'value': 166}, {'date': '2020-01-07', 'value': 122}, {'date': '2020-01-08', 'value': 81}, {'date': '2020-01-09', 'value': 56}, {'date': '2020-01-10', 'value': 39}, {'date': '2020-01-11', 'value': 97}, {'date': '2020-01-12', 'value': 114}, {'date': '2020-01-13', 'value': 114}, {'date': '2020-01-14', 'value': 130}, {'date': '2020-01-15', 'value': 151}, {'date': '2020-01-16', 'value': 184}, {'date': '2020-01-17', 'value': 148}, {'date': '2020-01-18', 'value': 145}, {'date': '2020-01-19', 'value': 134}, {'date': '2020-01-20', 'value': 145}, {'date': '2020-01-21', 'value': 145}, {'date': '2020-01-22', 'value': 145}, {'date': '2020-01-23', 'value': 143}, {'date': '2020-01-24', 'value': 148}, {'date': '2020-01-25', 'value': 224}, {'date': '2020-01-26', 'value': 181}, {'date': '2020-01-27', 'value': 112}, {'date': '2020-02-01', 'value': 111}, {'date': '2020-02-02', 'value': 129}, {'date': '2020-02-03', 'value': 151}, {'date': '2020-02-04', 'value': 131}, {'date': '2020-02-05', 'value': 131}, {'date': '2020-02-06', 'value': 131}, {'date': '2020-02-07', 'value': 114}, {'date': '2020-02-08', 'value': 112}, {'date': '2020-02-09', 'value': 112}, {'date': '2020-02-10', 'value': 112}, {'date': '2020-02-11', 'value': 124}, {'date': '2020-02-12', 'value': 187}, {'date': '2020-02-13', 'value': 202}, {'date': '2020-02-14', 'value': 200}, {'date': '2020-02-15', 'value': 203}, {'date': '2020-02-16', 'value': 237}, {'date': '2020-02-17', 'value': 263}, {'date': '2020-02-18', 'value': 221}, {'date': '2020-02-19', 'value': 197}, {'date': '2020-02-20', 'value': 184}, {'date': '2020-02-21', 'value': 185}, {'date': '2020-02-22', 'value': 203}, {'date': '2020-02-23', 'value': 290}, {'date': '2020-02-24', 'value': 330}, {'date': '2020-02-25', 'value': 330}, {'date': '2020-02-26', 'value': 226}, {'date': '2020-02-27', 'value': 113}, {'date': '2020-03-01', 'value': 148}, {'date': '2020-03-02', 'value': 169}, {'date': '2020-03-03', 'value': 148}, {'date': '2020-03-04', 'value': 78}, {'date': '2020-03-05', 'value': 96}, {'date': '2020-03-06', 'value': 96}, {'date': '2020-03-07', 'value': 96}, {'date': '2020-03-08', 'value': 77}, {'date': '2020-03-09', 'value': 59}, {'date': '2020-03-10', 'value': 22}, {'date': '2020-03-11', 'value': 22}, {'date': '2020-03-12', 'value': 70}, {'date': '2020-03-13', 'value': 110}, {'date': '2020-03-14', 'value': 128}]
+
+         let mySparkline = new Grapher("mySparkline",
+                                       {"data": dataSpark,
+                                        "x": {
+                                            "name": "date",
+                                            "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                        },
+                                        "y": {
+                                            "name": "value",
+                                            "tickFormat": d3.format('.3s'),
+                                            "label": "Glucose"
+                                        },
+                                        "type": "sparkline",
+                                        "sparkline": {
+                                            "range": [82, 180]
+                                        }
+                                       },
+                                       150,
+                                       25
+         );
+         mySparkline.draw();
+         
         </script>
         
     </body>

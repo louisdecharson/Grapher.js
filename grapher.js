@@ -7,7 +7,7 @@
 /**
  * The `Grapher` object represents the graph.
  *
- * You cerate a `Grapher` by specifying a `container` (a DOM element)
+ * You create a `Grapher` by specifying a `container` (a DOM element)
  *  that will contain the graph, and other options.
  *
  *
@@ -722,7 +722,7 @@ class Grapher {
                       .attr("class","tooltip_text")
                       .style("fill",(d, i) => this._options.style.tooltipColor)
                       .text((d,i) => `${this._options.y.tickFormat(d[this._options.y.name])}`)
-                      .attr('style', `font-size:${this._options.sparkline['text-font-size']};`));
+                      .attr('style', `font-size:${this._options.sparkline.textFontSize};`));
 
         }
 
