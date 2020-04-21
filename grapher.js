@@ -1,80 +1,241 @@
-function Grapher(id, options = {}, width = null, height = null) {
-    // Grapher class
-    // =============
-    // Code: Louis de Charsonville
+/* 
+ * Grapher - Plotting library
+ * @copyright Louis de Charsonville 2020
+ */
+
+
+/**
+ * The `Grapher` object represents the graph.
+ *
+ * You cerate a `Grapher` by specifying a `container` (a DOM element)
+ *  that will contain the graph, and other options.
+ *
+ *
+ * @class Grapher
+ * @param {string} id of the DOM element
+ * @param {Object} options Set of options for the graph. 
+ * @param {Array<Object>} [options.data=[]] Array of JSON containing the data
+ * @param {Object} options.x - Set of options for the x axis
+ * @param {string} [options.x.name=x] Name of the x-axis variable in options.data
+ * @param {string} [options.x.scale="scaleLinear"] - d3-scale (https://github.com/d3/d3-scale)
+ * @param {function|null} [options.x.parse=null] - Function to parse the data (useful if x-axis is a date)
+ * @param {function|null} [options.x.tickFormat=null] - Function to format the variable when displayed as tick or in tooltip
+ * @param {string|null} [options.x.label=null] - Label for x-axis
+ * @param {Array<number>|null} [options.x.domain=null] - Hardcode the x-axis bound. 
+ * Default is to use min and max of x values in options.data
+ * @param {Object} options.y - Set of options for the y axis
+ * @param {string} [options.y.name=x] name of the y-axis variable in options.data
+ * @param {string} [options.y.scale="scaleLinear"] d3-scale, see {@link https://github.com/d3/d3-scale|d3-scale on Github}
+ * @param {function|null} [options.y.parse=null] function to parse the data (useful if y-axis is a date)
+ * @param {function|null} [options.y.tickFormat=null] function to format the variable when displayed as tick or in tooltip
+ * @param {string|null} [options.y.label=null] label for y-axis
+ * @param {Array<number>|null} [options.y.domain=null] Hardcode the y-axis bound. Default is to use min and max of y values in options.data
+ * @param {Object} options.category set of options for category
+ * @param {string|null} [options.category.name=null] name of the category variable in options.data
+ * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
+ * @param {Array<string>} [options.categories=[]] hardcode the list of elements of the 'category' variable. 
+ *   Default is to take all unique values in options.data
+ * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
+ * @param {Object} options.style list of options for styling the elements of the graph
+ * @param {Array<string>} [options.style.colors] List of colors for the lines, bars, dots (not applicable for sparkline).
+*    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
+ * @param {number} [options.style.barWidth=0.8] Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars.
+ * @param {number} [options.style.strokeWidth=3] - stroke-width of the line. Default is 3px
+ * @param {number} [options.style.dotSize=4] - dot-size of the dots. Default is 4px 
+ * @param {Boolean} [options.style.grid=true] - Whether to display the y-axis grid
+ * @param {string} [options.style.tooltipColor="#181818"] - Text color in the tooltip
+ * @param {string} [options.style.tooltipBackgroundColor="#ffffff"] - Background color of the tooltip
+ * @param {string} [options.style.tooltipOpacity="0.8"] - Opacity of the tooltip. Default is 0.8 (80%)
+ * @param {string} [options.tooltipLineColor="#000000"] - Color of the vertical line color
+ * @param {Object} options.legend - Options for the legend 
+ * @param {Boolean} [options.legend.hide=false] - hide legend 
+ * @param {number} [options.legend.x=15] - legend's x position in the svg 
+ * @param {number} options.legend.y - legend's y position in the svg. Default value equals the margin-top of the g element inside the svg.
+ * @param {number} [options.legend.interstice=25] - space in px between the legend items
+ * @param {string} [options.legend.backgroundColor="#ffffff"] - legend's background color 
+ * @param {string} [options.legend.opacity="0.9"] - opacity of the legend
+ * @param {Object} options.download - options for downloading data associated with the graph
+ * @param {string} [options.filename="data_<elementId>_<date>.csv"] - filename for the csv linked to the data
+ * @param {Object} options.sparkline - options for the sparkline object
+ * @param {Array<number>|null} [options.sparkline.range=null] - range for the background's 
+ *   band displayed in the sparkline. If null, not the band is not displayed.
+ * @param {Boolean} [options.sparkline.textLastPoint=true] - display the last point's value as adjacent text.
+ * @param {number} [options.sparkline.strokeWidth=1] - stroke's width of the sparkline
+ * @param {string} [options.sparkline.lineColor="#000000"] - line's color of the sparkline
+ * @param {string} [options.sparkline.circleColor="#f00"] - circle's color for the last point of the sparkline
+ * @param {string} [options.sparkline.textColor="#f00"] - text's color of the last point value displayed next to the sparkline
+ * @param {string} [options.sparkline.textFontSize="85%"] - text's font size
+ * @param {string} [options.sparkline.textFontWeight="600"] - text's font weight
+ * @param {string} [options.sparkline.rangeFillColor="#ccc"] - range's band fill color
+ * @param {number} [width=null] width of the DOM element (if not already setup in HTML or CSS)
+ * @param {number} [height=null] height of the DOM element (if not already setup in HTML or CSS)
+ * @example 
+ * let myGraphExample1 = new Grapher('myGraphExample1',
+ *                                 {"data": data,
+ *                                  "x": {
+ *                                      "name": "date",
+ *                                       "scale": "scaleTime",
+ *                                       "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+ *                                       "tickFormat": d3.timeFormat("%d/%m/%y"),
+ *                                       "label": "Date"
+ *                                   },
+ *                                   "y": {
+ *                                       "name": "value",
+ *                                       "tickFormat": d3.format('.3s'),
+ *                                       "label": "Glucose"
+ *                                   },
+ *                                   "type": "dotted-line",
+ *                                   });
+ */
+class Grapher {
+    constructor(id, options = {}, width = null, height = null) {
+        this.id = id;
+        this.el = document.getElementById(this.id);
+
+        // Setting width and height
+        this.width =  width || this.el.offsetWidth;
+        this.height = height || this.el.offsetHeight;
+
+        // Find font size of the element
+        this._fontSize = parseFloat(window.getComputedStyle(this.el).fontSize);
+
+        // Add a container for the graph
+        this.container = d3.select(`#${this.id}`)
+            .append('span')
+            .attr('class','grapherContainer');
+
+        // Add svg
+        this.svg = this.container
+            .append("svg")
+            .attr("id", this.id + '_svg')
+            .attr("width", this.width)
+            .attr("height", this.height);
+
+        // Check if options set to sparkline
+        if (options.type != undefined &&
+            options.type == "sparkline") {
+            this.isSparkline = true;
+        } else {
+            this.isSparkline = false;
+        }
+
+        // Create margins
+        this._margin = {};
+        this.margin = {};
+
+        // Set default options and update with options pass by user
+        this._options = {
+            "data": [],
+            "x": {
+                "name": "x",
+                "scale": "scaleLinear",
+                "tickFormat": d3.format('.3s'),
+                "parse": null,
+                "label": null,
+                "domain": null
+            },
+            "y": {
+                "name": "y",
+                "scale": "scaleLinear",
+                "tickFormat": d3.format('.3s'),
+                "parse": null,
+                "label": null,
+                "domain": null
+            },
+            "category": {
+                "name": null,
+                "parse": d => d
+            },
+            "categories": [],
+            "type": "line",
+            "style": {
+                "colors": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
+                "barWidth": 0.8,
+                "strokeWidth": 3,
+                "dotSize": 4,
+                "grid": true,
+                "tooltipColor": "#181818",
+                "tooltipBackgroundColor": "#ffffff",
+                "tooltipOpacity": "0.8",
+                "tooltipLineColor": "#000000"
+            },
+            "legend": {
+                "hide": false,
+                "x": 15, 
+                "y": this._margin.top,
+                "interstice": 25, // distance between dots
+                "backgroundColor": "#ffffff",
+                "opacity": "0.9"
+            },
+            "download": {
+                "filename": `data_${this.id}_${Date.now()}.csv`
+            },
+            "sparkline": {
+                "range": null, // either null or array [min, max]
+                "textLastPoint": true,
+                "strokeWidth": 1,
+                "lineColor": "#000000",
+                "circleColor": "#f00",
+                "textColor": "#f00",
+                "textFontSize": "85%",
+                "textFontWeight": "600",
+                "rangeFillColor": "#ccc"
+            }
+        };
+        // Update options
+        this.options = options;
+    }
     
-    // id : id of the graph
-    this.id = id;
-    this.el = document.getElementById(this.id);
-
-    // Setting width and height
-    this.width = width ? width : this.el.offsetWidth;
-    this.height = height ? height : this.el.offsetHeight;
-
-    // add container
-    this.container = d3.select(`#${this.id}`)
-        .append('span')
-        .attr('class','grapherContainer');
-    
-    // Add svg
-    this.svg = this.container
-        .append("svg")
-        .attr("id", this.id + '_svg')
-        .attr("width", this.width)
-        .attr("height", this.height);
-
-    // Check if options set to sparkline
-    if (options.type != undefined &&
-        options.type == "sparkline") {
-        this.isSparkline = true;
-    } else {
-        this.isSparkline = false;
+    /**
+     * Get and sets the values of the inner margins
+     * @name margin
+     * @param {Object} margin
+     * @param {string} [margin.top=10] - margin top
+     * @param {string|function} [margin.right=(x) => x < 400 ? 20 : 30] - margin right depends of the width of the graph
+     * @param {string} margin.bottom - margin bottom
+     * @param {string|function} [margin.left=(x) => x < 400 ? 40 : 60] - margin left depends of the width of the graph
+     * @return {Object}
+     * @instance 
+     * @memberof Grapher
+     */
+    get margin() {
+        return this._margin;
+    }
+    set margin({top=10,
+                right=((x) => x < 400 ? 20 : 30),
+                bottom,
+                left=(x) => x < 400 ? 40 : 60}={}){
+        if (this.isSparkline) {
+            this._margin = {"top": 0, "right": 0, "bottom": 0, "left": 0};
+        } else {
+            this._margin = {"top": top,
+                            "right": typeof right == "function" ? right(this.width) : right,
+                            "bottom": this._fontSize*2 + 20,
+                            "left": typeof left == "function" ? left(this.width) : left};
+        }
+        this._innerDimensions();
     }
 
-
-    // Setting margin
-    this._setMargin = function({top=10,
-                                right=((x) => x < 400 ? 20 : 30),
-                                bottom=40,
-                                left=(x) => x < 400 ? 40 : 60}={}) {
-        this.margin = {};
-        if (this.isSparkline) {
-            this.margin = {
-                "top": 0,
-                "right": 0,
-                "bottom": 0,
-                "left": 0
-            };
-        }  else {
-            this.margin.top = top;
-            this.margin.right = typeof right == "function" ? right(this.width) : right;
-            this.margin.bottom = parseFloat(window.getComputedStyle(document.getElementById(this.id)).fontSize)*2 + 20;
-            this.margin.left = typeof left == "function" ? left(this.width) : left;
-        }
-        this._innerDimensions(); 
-    };
-    
-    
-    // Setting inner width and inner height (without axes)
-    this._innerDimensions = function() {
-        this.innerWidth = this.width - this.margin.left - this.margin.right;
-        this.innerHeight = this.height - this.margin.top - this.margin.bottom;
+    // Setting inner dimension (without axes)
+    _innerDimensions() {
+        this.innerWidth = this.width - this._margin.left - this._margin.right;
+        this.innerHeight = this.height - this._margin.top - this._margin.bottom;
 
         this._createSVG();
     };
-    
+
     // Creating the svg
-    this._createSVG = function() {
+    _createSVG() {
         this.svg.select(`#${this.id}_g`).remove();
         this.g = this.svg.append("g")
             .attr('id', this.id + '_g')
-            .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+            .attr('transform', `translate(${this._margin.left},${this._margin.top})`);
 
         this._addOverlay();
     };
-    
+
     // Add overlay for focus & tooltip
-    this._addOverlay = function() {
+    _addOverlay() {
         this.g.append("rect")
             .attr("class", "overlay")
             .attr("fill","none")
@@ -83,165 +244,93 @@ function Grapher(id, options = {}, width = null, height = null) {
             .attr("height", this.innerHeight);
     };
 
-    //
-    this._setMargin();
-    
-    // Default-Options
-    this.options = {
-        "data": [],
-        "x": {
-            "name": "x",
-            "scale": "scaleLinear",
-            "tickFormat": d3.format('.3s'),
-            "parse": false,
-            "label": false,
-            "domain": null
-        },
-        "y": {
-            "name": "y",
-            "scale": "scaleLinear",
-            "tickFormat": d3.format('.3s'),
-            "parse": false,
-            "label": false,
-            "domain": ""
-        },
-        "category": {
-            "name": null,
-            "parse": d => d
-        },
-        "categories": [],
-        "type": "line",
-        "style": {
-            "colors": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
-            "barWidth": 0.8,
-            "stroke-width": 3,
-            "dot-size": 4,
-            "grid": true,
-            "tooltipColor": "#181818",
-            "tooltipBackgroundColor": "#ffffff",
-            "tooltipOpacity": "0.8",
-            "tooltipLineColor": "#000000"
-        },
-        "legend": {
-            "hide": false,
-            "x": 15, 
-            "y": this.margin.top,
-            "distance": 25, // distance between dots
-            "backgroundColor": "#ffffff",
-            "opacity": "0.9"
-        },
-        "download": {
-            "filename": `data_${this.id}_${Date.now()}.csv`
-        },
-        "sparkline": {
-            "range": null, // either null or array [min, max]
-            "textLastPoint": true,
-            "stroke-width": 1,
-            "line-color": "#000000",
-            "circle-color": "#f00",
-            "text-color": "#f00",
-            "text-font-size": "85%",
-            "text-font-weight": "600",
-            "range-fill-color": "#ccc"
-        }
-    };
-    this.getCategoriesList = function(data=this.options.data,category=this.options.category.name) {
-        if (! this.options.category.name) {
-            this.options.categories = this.options.y.label ? [this.options.y.label] : [this.options.y.name];
-        } else {
-            this.options.categories = d3.set(data.map(d => d[category])).values();
-        }
-    };
-    this.parseData = function() {
-        if (this.options.x.parse || this.options.y.parse) {
-            let data = [];
-            for (const d of this.options.data) {
-                let _ = {};
-                _[this.options.x.name] = this.options.x.parse ? this.options.x.parse(d[this.options.x.name]) : d[this.options.x.name];
-                _[this.options.y.name] = this.options.y.parse ? this.options.y.parse(d[this.options.y.name]) : d[this.options.y.name];
-                if (this.options.category.name) {
-                    _[this.options.category.name] =  d[this.options.category.name];
-                } else {
-                    _['category'] = this.options.y.label ? this.options.y.label : this.options.y.name;
-                }
-                data.push(_);
-            }
-            this.options.data = data;
-            // update category name in case
-            this.options.category.name = this.options.category.name || 'category';
-        }
-    };
-    this.updateOptions = function (options) {
-        for (const key of Object.keys(options)) {
-            if (Object.keys(this.options).indexOf(key) > -1) {
-                if (this.options[key].constructor == Object) { // true if
-                    for (const subkey of Object.keys(options[key])) {
-                        if (Object.keys(this.options[key]).indexOf(subkey) > -1) {
-                            this.options[key][subkey] = options[key][subkey];
+    /** 
+     * Gets and sets the option for `Grapher` object.
+     * @name options
+     * @param {Object} options @link Grapher
+     * @instance
+     * @memberof Grapher
+     */
+    get options () {
+        return this._options;
+    }
+    set options(opt) {
+        for (const key of Object.keys(opt)) {
+            if (Object.keys(this._options).indexOf(key) > -1) {
+                if (this._options[key].constructor == Object) { // true if _options[key] is a dict
+                    for (const subkey of Object.keys(opt[key])) {
+                        if (Object.keys(this._options[key]).indexOf(subkey) > -1) {
+                            this._options[key][subkey] = opt[key][subkey];
                         }
                     }
                 } else {
-                    this.options[key] = options[key];
+                    this._options[key] = opt[key];
                 }
             }
         }
-        // If no category is passed, use 'category', see also parseData
-        if (! options.category && ! this.options.category.name) {
-            options.categories = ['category'];
+        if (! opt.category && ! this._options.category.name) {
+            opt.categories = ['category'];
         }
-        if (! options.categories || this.options.categories.length == 0) {
-            this.getCategoriesList();
+        if (! opt.categories || this._options.categories.length == 0) {
+            this._getCategoriesList();
         }
+
         // if user forgot to specify scaleTime while parsing a date
-        if (! options.x.scale && options.x.parse && options.x.parse.toString().includes('d3.timeParse')) {
-            this.options.x.scale = "scaleTime";
+        if (opt.x && ! opt.x.scale && opt.x.parse && opt.x.parse.toString().includes('d3.timeParse')) {
+            this._options.x.scale = "scaleTime";
         }
-        if (! options.y.scale && options.y.parse && options.y.parse.toString().includes('d3.timeParse')) {
-            this.options.y.scale = "scaleTime";
+        if (opt.y && ! opt.y.scale && opt.y.parse && opt.y.parse.toString().includes('d3.timeParse')) {
+            this._options.y.scale = "scaleTime";
         }
-        
+
         // If user don't specify a tickFormat while using d3.timeParse, use the format arg of d3.timeParse for tickFormat
-        this._findTimeFormat = function(str) {
-            // Find the time format argument in timeParse
-            let a = str.indexOf('d3.timeParse') + 14,
-                b = str.slice(a),
-                c = b.indexOf(')')-1;
-            return b.slice(0,c);
-        };
-        if (! options.x.tickFormat && options.x.parse && options.x.parse.toString().includes('d3.timeParse')) {
-            this.options.x.tickFormat = d3.timeFormat(this._findTimeFormat(options.x.parse.toString()));
+        if (opt.x && ! opt.x.tickFormat && opt.x.parse && opt.x.parse.toString().includes('d3.timeParse')) {
+            this._options.x.tickFormat = d3.timeFormat(Grapher.findTimeFormat(opt.x.parse.toString()));
         }
-        if (! options.y.tickFormat && options.y.parse && options.y.parse.toString().includes('d3.timeParse')) {
-            this.options.y.tickFormat = d3.timeFormat(this._findTimeFormat(options.y.parse.toString()));
+        if (opt.y && ! opt.y.tickFormat && opt.y.parse && opt.y.parse.toString().includes('d3.timeParse')) {
+            this._options.y.tickFormat = d3.timeFormat(Grapher.findTimeFormat(opt.y.parse.toString()));
         }
-
         
+        // Defines color function
         this.color = d3.scaleOrdinal()
-            .domain(this.options.categories)
-            .range(this.options.style.colors);
+            .domain(this._options.categories)
+            .range(this._options.style.colors);
 
-        this.parseData();
+        this._parseData();
 
-        this._setMargin({bottom:(this.options.x.label ? 60 : 30),
-                         left:(this.options.y.label ? 80 : 60)});
-        
-    };
-    
-    this.updateOptions(options);
-    
+        // set margins
+        this.margin = {left:(this._options.y.label ? 80 : 60)};
+    }
 
-    // ===
-    
-    this._unique = function(arr) {
-        if (arr.every(e => e instanceof Date)) {
-            let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
-            return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
+
+    _getCategoriesList(data=this._options.data,category=this._options.category.name) {
+        if (! this._options.category.name) {
+            this._options.categories = this._options.y.label ? [this._options.y.label] : [this._options.y.name];
         } else {
-            return Array.from(new Set(arr)).sort();
+            this._options.categories = d3.set(data.map(d => d[category])).values();
         }
     };
-    this._getOptimalPrecision = (n) => `.${Math.abs(Math.floor(Math.log10((n > 0 ? n : 1))))+1}%`;
-    this._extent = function(variable, scale, enforceMinimumAt0=false, data=this.options.data) {
+    _parseData() {
+        if (this._options.x.parse || this._options.y.parse) {
+            let data = [];
+            for (const d of this._options.data) {
+                let _ = {};
+                _[this._options.x.name] = this._options.x.parse ? this._options.x.parse(d[this._options.x.name]) : d[this._options.x.name];
+                _[this._options.y.name] = this._options.y.parse ? this._options.y.parse(d[this._options.y.name]) : d[this._options.y.name];
+                if (this._options.category.name) {
+                    _[this._options.category.name] =  d[this._options.category.name];
+                } else {
+                    _['category'] = this._options.y.label ? this._options.y.label : this._options.y.name;
+                }
+                data.push(_);
+            }
+            this._options.data = data;
+            // update category name in case
+            this._options.category.name = this._options.category.name || 'category';
+        }
+    }
+
+    extent(variable, scale, enforceMinimumAt0=false, data=this._options.data) {
         if (scale == "scaleLog") {
             let min = d3.min(data.filter(d => d[variable] > 0), d => d[variable]),
                 max = d3.max(data, d => d[variable]);
@@ -254,23 +343,179 @@ function Grapher(id, options = {}, width = null, height = null) {
                 return d3.extent(data, d => d[variable]);
             }
         }
-    };
+    }
     
-    this.addX = function(options=null) {
-        if (options) {
-            this.updateOptions(options);
+
+    // Static Methods
+    // =============
+    /**
+     * Return the timeformat in d3.timeParse function
+     * @param {string} str - string containing d3.timeParse(xxx)
+     * @return {string} time format argument of d3.timeParse function
+     */
+    static findTimeFormat(str) {
+        // Find the time format argument in timeParse
+        let a = str.indexOf('d3.timeParse') + 14,
+            b = str.slice(a),
+            c = b.indexOf(')')-1;
+        return b.slice(0,c);
+    }
+
+    /**
+     * Return unique values of an array (including if there are dates)
+     * @param {Array} arr - array
+     * @return {Array} of unique values of 'arr'
+     */
+    static unique(arr) {
+        if (arr.every(e => e instanceof Date)) {
+            let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
+            return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
+        } else {
+            return Array.from(new Set(arr)).sort();
         }
+    }
+    
+    static getOptimalPrecision(n) {
+        return `.${Math.abs(Math.floor(Math.log10((n > 0 ? n : 1))))+1}%`;
+    }
+    
+    // Drawing methods
+    // ===============
+    sparkline() {
         
         // Define X-axis
-        // -------------
+        this.x = d3.scaleLinear()
+            .range([0, this.width-2])
+            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
+        this.xValues = Grapher.unique(this._options.data.map(d => d[this._options.x.name]));
+        
+        // Define y-axis
+        this.y = d3.scaleLinear()
+            .range([this.height-4, 0])
+            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale));
+        
+        // Remove existing
+        this.svg.selectAll('g.sparkline').remove();
+
+        // Change svg and g container
+        this.container.attr('style','vertical-align:middle; display:inline-block;');
+        this.g.attr('transform', 'translate(0,2)')
+            .attr('class','sparkline');
+
+
+        // Add range
+        if (this._options.sparkline.range) {
+            let dataRange = this._options.data.map(d => {d.minRange = this._options.sparkline.range[0]; d.maxRange = this._options.sparkline.range[1]; return d;});
+            this.g.append('path')
+                .datum(dataRange)
+                .attr('fill', this._options.sparkline.rangeFillColor)
+                .attr('stroke','none')
+                .attr('d', d3.area()
+                      .x(d => this.x(d[this._options.x.name]))
+                      .y0(d => this.y(d.minRange))
+                      .y1(d => this.y(d.maxRange)));
+        }
+        
+        // Add sparkline
+        this.sparkLine = this.g.append('path')
+            .datum(this._options.data)
+            .attr('class', 'sparkLine')
+            .attr('fill', 'none')
+            .attr('stroke-width', this._options.sparkline.strokeWidth)
+            .attr('stroke', this._options.sparkline.lineColor)
+            .attr('d',d3.line()
+                  .curve(d3.curveBasis)
+                  .x(d => this.x(d[this._options.x.name]))
+                  .y(d => this.y(d[this._options.y.name])));
+
+        // Add point and circle
+        this.lastPoint = this._options.data.slice(-1)[0];
+        this.sparkCircle = this.g.append('circle')
+            .attr('class','sparkCircle')
+            .attr('cx', this.x(this.lastPoint[this._options.x.name]))
+            .attr('cy', this.y(this.lastPoint[this._options.y.name]))
+            .attr('r', 1.5)
+            .attr('fill', this._options.sparkline.circleColor)
+            .attr('stroke', 'none');
+        if (this._options.sparkline.textLastPoint) {
+            this.sparkText = d3.select(`#${this.id}`)
+                .append('span')
+                .attr('class','sparkText')
+                .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
+                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this._options.sparkline.textColor}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block;`);
+        }
+        if (this._options.y.label) {
+            this.sparkText = d3.select(`#${this.id}`)
+                .append('span')
+                .attr('class','sparkText')
+                .text(this._options.y.label)
+                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
+        }        
+    }
+
+    /**
+     * Draw the Grapher object
+     * @param {Object|null} options - you can pass an options Object to update the element's option. @link Grapher
+     */
+    draw(options) {
+        if (options) {
+            this.options = options;
+        }
+        
+        // Clean
+        this.g.selectAll('g.x.axis').remove();
+        this.g.selectAll('g.y.axis').remove();
+        this.g.selectAll('g.yGrid').remove();
+
+        
+        // Add axis & grid
+        if (this._options.type == "sparkline") {
+            this.sparkline();
+            this.addTooltip();
+        } else {
+            this.addX();
+            if (this._options.type == "bar") {
+                this.addX2();
+            }
+            if (this._options.x.label) {
+                this.addXLabel();
+            }
+            this.addY();
+            if (this._options.y.label) {
+                this.addYLabel();
+            }
+            
+            // Add content      
+            this._draw();
+
+            // Add tooltip & legend
+            this.addTooltip();
+            this.addLegend();
+        }
+    }
+    /** 
+     * Download the data associated with the Grapher element
+     *
+     */
+    static downloadData() {
+        let domEl = document.createElement('a');
+        domEl.id = "download";
+        domEl.download = this._options.download.name;
+        domEl.href = URL.createObjectURL(new Blob([to_csv(this._options.data)]));
+        domEl.click();
+    };
+
+    // Graph internal methods
+    // =======================
+    addX() {
         // (i) Find the width
-        this.xValues = this._unique(this.options.data.map(d => d[this.options.x.name]));
+        this.xValues = Grapher.unique(this._options.data.map(d => d[this._options.x.name]));
         this.xNbValues = this.xValues.length;
         this.xWidth = this.innerWidth / this.xNbValues;
-        this.xRange = this.options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
+        this.xRange = this._options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
         this.xNbTicks = d3.min([parseInt((this.width - 100) / 100), this.xNbValues]);
-        this.x = d3[this.options.x.scale]()
-            .domain((this.options.x.domain ? this.options.x.domain : this._extent(this.options.x.name, this.options.x.scale)))
+        this.x = d3[this._options.x.scale]()
+            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
             .nice()
             .range(this.xRange);
 
@@ -280,10 +525,10 @@ function Grapher(id, options = {}, width = null, height = null) {
             .attr("transform",`translate(0, ${this.innerHeight})`)
             .call(d3.axisBottom(this.x)
                   .ticks(this.xNbTicks)
-                  .tickFormat(this.options.x.tickFormat)
+                  .tickFormat(this._options.x.tickFormat)
                  );
         // add horizontal line to complete x axis when there is no grid
-        if (!this.options.style.grid) {
+        if (!this._options.style.grid) {
             this.g.append("g")
                 .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.innerHeight + 0.5})`)
@@ -292,53 +537,42 @@ function Grapher(id, options = {}, width = null, height = null) {
                 .attr('stroke','currentColor')
                 .attr('x2', this.innerWidth);
         }
-    };
-
-    this.addXLabel = function(options=null) {
-        // Add Title for X axis
-        if (options) {
-            this.updateOptions(options);
-        }
+    }
+    addXLabel() {
         this.g.append("text")
             .attr("class","xLabel axisLabel")
-            .attr("transform", `translate(${this.innerWidth/2},${this.height-this.margin.bottom/2})`)
+            .attr("transform", `translate(${this.innerWidth/2},${this.height-this._margin.bottom/2})`)
             .style("text-anchor","middle")
-            .text(this.options.x.label);
+            .text(this._options.x.label);
     };
 
-    this.addX2 = function(options=null) {
+    addX2() {
         // Second X-axis in case of bars
-        if (options) {
-            this.updateOptions(options);
-        }
         this.x2 = d3.scaleBand()
-            .domain(this.options.categories)
-            .rangeRound([-this.xWidth/2*this.options.style.barWidth, this.xWidth/2*this.options.style.barWidth]);
-    };
+            .domain(this._options.categories)
+            .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
+    }
 
-    this.addY = function(options=null) {
-        if (options) {
-            this.updateOptions(options);
-        }
-        this.yVar = this.options.y.name;
+    addY() {
+        this.yVar = this._options.y.name;
 
         // Define Y Axis
-        this.y = d3[this.options.y.scale]()
-            .domain(this.options.y.domain ? this.options.y.domain : this._extent(this.options.y.name, this.options.y.scale, this.options.type == "bar"))
+        this.y = d3[this._options.y.scale]()
+            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale, this._options.type == "bar"))
             .nice()
             .range([this.innerHeight, 0]);
 
         // Add Y axis to svg
         this.g.append("g")
-        .attr('class','y axis')
-        .call(d3.axisLeft(this.y)
-              .tickFormat(this.options.y.tickFormat));
+            .attr('class','y axis')
+            .call(d3.axisLeft(this.y)
+                  .tickFormat(this._options.y.tickFormat));
         // Define Y grid
-        if (this.options.style.grid) {
+        if (this._options.style.grid) {
             this.addYGrid();
         }
         // Add X axis at 0
-        if (this.y.domain()[0] < 0 && this.options.type == "bar") {
+        if (this.y.domain()[0] < 0 && this._options.type == "bar") {
             this.g.append("g")
                 .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.y(0)})`)
@@ -347,18 +581,13 @@ function Grapher(id, options = {}, width = null, height = null) {
                 .attr('stroke','currentColor')
                 .attr('x2', this.innerWidth);
         }
-
-    };
-
-    this.addYGrid = function(options=null) {
-        if (options) {
-            this.updateOptions(options);
-        }
+    }
+    addYGrid() {
         // Define Y grid
         this.yGrid = svg => svg
             .call(d3.axisRight(this.y)
                   .tickSize(this.innerWidth)
-                  .tickFormat(this.options.y.tickFormat))
+                  .tickFormat(this._options.y.tickFormat))
             .call(g => g.selectAll('.domain').remove())
             .call(g => g.selectAll(".tick:not(:first-of-type) line")
                   .attr("stroke-opacity", 0.5)
@@ -369,54 +598,45 @@ function Grapher(id, options = {}, width = null, height = null) {
         this.g.append("g")
             .attr('class','yGrid')
             .call(this.yGrid);
-    };
-
-    this.addYLabel = function(options=null) {
+    }
+    addYLabel() {
         // Add Title for X axis
-        if (options) {
-            this.updateOptions(options);
-        }
         this.g.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - this.margin.left)
+            .attr("y", 0 - this._margin.left)
             .attr("x",0 - (this.innerHeight / 2))
             .attr("dy", "1em")
             .attr("class","yLabel axisLabel")
             .style("text-anchor", "middle")
-            .text(this.options.y.label);   
-    };
-
-    this._drawContent =  function(options=null) {
-        if (options) {
-            this.updateOptions(options);
-        }
+            .text(this._options.y.label);   
+    }
+    _draw() {
         this.g.selectAll('path.lines').remove();
         this.g.selectAll(`rect.bar`).remove();
         this.g.selectAll(`circle.dots`).remove();
-        
-        for (const category of this.options.categories) {
-            if (['line','dotted-line'].indexOf(this.options.type) > -1) {
+        for (const category of this._options.categories) {
+            if (['line','dotted-line'].indexOf(this._options.type) > -1) {
                 this.g.append('path')
-                    .datum(this.options.data.filter(d => d[this.options.category.name] === category))
+                    .datum(this._options.data.filter(d => d[this._options.category.name] === category))
                     .attr('class','lines')
                     .attr('fill', 'none')
                     .attr('stroke', d => this.color(category))
-                    .attr('stroke-width', this.options.style["stroke-width"])
+                    .attr('stroke-width', this._options.style.strokeWidth)
                     .attr('d', d3.line()
-                          .y(d => this.y(d[this.options.y.name]))
-                          .defined(d => d[this.options.y.name])
-                          .x(d => this.x(d[this.options.x.name])));
+                          .y(d => this.y(d[this._options.y.name]))
+                          .defined(d => d[this._options.y.name])
+                          .x(d => this.x(d[this._options.x.name])));
             };
-            if (this.options.type == "bar") {           
+            if (this._options.type == "bar") {           
                 this.g.selectAll(`rect.bar.${category.replace(/ /g,'_')}`)
-                    .data(this.options.data.filter(d => d[this.options.category.name] === category))
+                    .data(this._options.data.filter(d => d[this._options.category.name] === category))
                     .join('rect')
                     .attr('class', `bar ${category.replace(/ /g,'_')}`)
                     .attr('fill',  d => this.color(category))
-                    .attr('x', d => this.x(d[this.options.x.name]) + this.x2(category))
+                    .attr('x', d => this.x(d[this._options.x.name]) + this.x2(category))
                     .attr('width', this.x2.bandwidth())
-                    .attr('y', d => d[this.options.y.name] > 0 ? this.y(d[this.options.y.name]) : this.y(0))
-                    .attr('height', d => Math.abs(this.y(0) - this.y(d[this.options.y.name])))
+                    .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
+                    .attr('height', d => Math.abs(this.y(0) - this.y(d[this._options.y.name])))
                     .on("mouseover", function(d) {
 	                d3.select(this).attr("fill", function() {
                             return d3.rgb(d3.select(this).style("fill")).darker(0.5);
@@ -429,21 +649,19 @@ function Grapher(id, options = {}, width = null, height = null) {
                     });
             };
         };
-        if (['dotted-line','dot'].indexOf(this.options.type) > -1) {
+        if (['dotted-line','dot'].indexOf(this._options.type) > -1) {
             this.g.selectAll("circle")
-                .data(this.options.data)
+                .data(this._options.data)
                 .join("circle")
-                .style("fill", d => this.color(d[this.options.category.name]))
+                .style("fill", d => this.color(d[this._options.category.name]))
                 .attr("class","dots")
-                .attr("r", this.options.style["dot-size"])
-                .attr("cx", (d, i) => this.x(d[this.options.x.name]))
-                .attr("cy", (d, i) => this.y(d[this.options.y.name]));
+                .attr("r", this._options.style.dotSize)
+                .attr("cx", (d, i) => this.x(d[this._options.x.name]))
+                .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         };
-    };
+    }
 
-
-    // Tooltip
-    this._buildTooltip = function(g, data, mouseX, mouseY) {
+    _buildTooltip(g, data, mouseX, mouseY) {
         if (! data) return g.style("display","none");
         g.style("display", null);
 
@@ -451,20 +669,20 @@ function Grapher(id, options = {}, width = null, height = null) {
               .data([null])
               .join("line")
               .attr("class", "tooltip_line")
-              .attr('style',`stroke: ${this.options.style.tooltipLineColor};`)
+              .attr('style',`stroke: ${this._options.style.tooltipLineColor};`)
               .attr("x1", mouseX)
               .attr("x2", mouseX) 
               .attr("y1", 0)
               .attr("y2", this.innerHeight);
         
-        if (this.options.type != "bar") {
+        if (this._options.type != "bar") {
             const dots = g.selectAll("circle")
                   .data(data.slice(1))
                   .join("circle")
-                  .style("fill", d => this.isSparkline ? this.options.sparkline["circle-color"] : this.color(d[this.options.category.name]))
+                  .style("fill", d => this.isSparkline ? this._options.sparkline["circle-color"] : this.color(d[this._options.category.name]))
                   .attr("r", this.isSparkline ? 2 : 5)
-                  .attr("cx", (d, i) => this.x(d[this.options.x.name]))
-                  .attr("cy", (d, i) => this.y(d[this.options.y.name]));
+                  .attr("cx", (d, i) => this.x(d[this._options.x.name]))
+                  .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         }
         
         
@@ -473,7 +691,7 @@ function Grapher(id, options = {}, width = null, height = null) {
               .data([null])
               .join("rect")
               .attr("class","rect_tooltip")
-              .attr("style",`fill:${this.options.style.tooltipBackgroundColor}; fill-opacity: ${this.options.style.tooltipOpacity};`);
+              .attr("style",`fill:${this._options.style.tooltipBackgroundColor}; fill-opacity: ${this._options.style.tooltipOpacity};`);
 
         // Tooltip text
         let text;
@@ -489,8 +707,8 @@ function Grapher(id, options = {}, width = null, height = null) {
                       .attr("y", (d, i) => `${i * 1.1}em`)
                       .attr("class","tooltip_text")
                       .style("font-weight","bold")
-                      .style("fill",(d, i) => i === 0 ? this.options.style.tooltipColor : this.color(d[this.options.category.name]))
-                      .text((d,i) => i === 0 ? this.options.x.tickFormat(d) : `${this.options.category.parse(d[this.options.category.name])}: ${this.options.y.tickFormat(d[this.options.y.name])}`));
+                      .style("fill",(d, i) => i === 0 ? this._options.style.tooltipColor : this.color(d[this._options.category.name]))
+                      .text((d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name])}`));
         } else {
             text = g.selectAll("text")
                 .data([null])
@@ -502,9 +720,9 @@ function Grapher(id, options = {}, width = null, height = null) {
                       .attr("x", 0)
                       .attr("y", (d, i) => `${i * 1.1}em`)
                       .attr("class","tooltip_text")
-                      .style("fill",(d, i) => this.options.style.tooltipColor)
-                      .text((d,i) => `${this.options.y.tickFormat(d[this.options.y.name])}`)
-                      .attr('style', `font-size:${this.options.sparkline['text-font-size']};`));
+                      .style("fill",(d, i) => this._options.style.tooltipColor)
+                      .text((d,i) => `${this._options.y.tickFormat(d[this._options.y.name])}`)
+                      .attr('style', `font-size:${this._options.sparkline['text-font-size']};`));
 
         }
 
@@ -520,11 +738,11 @@ function Grapher(id, options = {}, width = null, height = null) {
             .attr("rx", 5)
             .attr("width", w + 10)
             .attr("height", h + 10);
-       
+        
         return true;
-    };
+    }
 
-    this._getMouseData = function(mouseX) {
+    _getMouseData(mouseX) {
         let mouseXValue_ = this.x.invert(mouseX), // mouse value projection on X axis
             mouseIndex = d3.bisector(d => d).left(this.xValues, mouseXValue_), // mouse index on X axis
             a = mouseIndex > 0 ? this.xValues[mouseIndex - 1] : 0,
@@ -533,15 +751,12 @@ function Grapher(id, options = {}, width = null, height = null) {
 
         // console.log(mouseXValue_, mouseIndex, a, b);
         let mouseXValue = mouseXValue_ - a > b - mouseXValue_ ? b : a,
-            mouseYValues = this.options.data.filter(d => d[this.options.x.name].toString() == mouseXValue.toString())
-            .sort((a,b) => b[this.options.y.name] - a[this.options.y.name]);
+            mouseYValues = this._options.data.filter(d => d[this._options.x.name].toString() == mouseXValue.toString())
+            .sort((a,b) => b[this._options.y.name] - a[this._options.y.name]);
         return [mouseXValue].concat(mouseYValues);
-    };
+    }
 
-    this.addTooltip = function (options=null) {
-        if (options) {
-            this.updateOptions(options);
-        }
+    addTooltip() {
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
         let that = this;
@@ -554,43 +769,40 @@ function Grapher(id, options = {}, width = null, height = null) {
             }
         });
         this.g.on("touchend mouseleave", () => {this.tooltip.call(this._buildTooltip, null);});
-    };
+    }
 
-    this.addLegend = function(options=null) {
-        if (options) {
-            this.updateOptions(options);
-        }
+    addLegend() {
         this.g.selectAll('.legend').remove();
         this.legend = this.g.append('g').attr('class','legend');
         this.legendBackground = this.legend.selectAll('rect')
             .data([null])
             .join("rect")
             .attr("class", "rect_legend")
-            .attr("style",`fill:${this.options.legend.backgroundColor}; fill-opacity: ${this.options.legend.opacity};`);
+            .attr("style",`fill:${this._options.legend.backgroundColor}; fill-opacity: ${this._options.legend.opacity};`);
         
         this.legendDots = this.legend.selectAll(".dots-legend")
-            .data(this.options.categories);
+            .data(this._options.categories);
         this.legendDots.exit().remove();
         this.legendDots.enter()
             .append("circle")
             .merge(this.legendDots)
-            .attr("cx", this.options.legend.x + 10)
-            .attr("cy", (d,i) => this.options.legend.y + i * this.options.legend.distance)
+            .attr("cx", this._options.legend.x + 10)
+            .attr("cy", (d,i) => this._options.legend.y + i * this._options.legend.interstice)
             .attr("r", 3)
             .attr('class','dots-legend')
             .style("fill",d => this.color(d));
 
         // Add one dot in the legend for each name.
         this.legendLabels = this.legend.selectAll(".labels-legend")
-            .data(this.options.categories);
+            .data(this._options.categories);
         this.legendLabels.exit().remove();
         this.legendLabels.enter()
             .append("text")
             .merge(this.legendLabels)
-            .attr("x", this.options.legend.x + 30)
-            .attr("y", (d,i) => this.options.legend.y + i * this.options.legend.distance)
+            .attr("x", this._options.legend.x + 30)
+            .attr("y", (d,i) => this._options.legend.y + i * this._options.legend.interstice)
             .style("fill", d => this.color(d))
-            .text(t => this.options.category.parse(t))
+            .text(t => this._options.category.parse(t))
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
             .attr('class','labels-legend');
@@ -608,134 +820,12 @@ function Grapher(id, options = {}, width = null, height = null) {
             w = 0,
             h = 0;
         }
-        this.legendBackground.attr('x', this.options.legend.x-5)
-            .attr('y',this.options.legend.y-10)
-            .attr('width', (w > 0 ? w + 20 : d3.max(this.options.categories.map(d => d.length))*10 + 10)) // if graph is not displayed the width and height will be zero (*)
-            .attr('height',(h > 0 ?  h + 10 : this.options.categories.length * this.options.legend.distance + 10));
+        this.legendBackground.attr('x', this._options.legend.x-5)
+            .attr('y',this._options.legend.y-10)
+            .attr('width', (w > 0 ? w + 20 : d3.max(this._options.categories.map(d => d.length))*10 + 10)) // if graph is not displayed the width and height will be zero (*)
+            .attr('height',(h > 0 ?  h + 10 : this._options.categories.length * this._options.legend.interstice + 10));
         // (*) we try to estimate the width and height based on max
         //     nb of characthers of the legend text and nb of keys
         
-    };
-
-    this.sparkline = function() {
-        
-        // Define X-axis
-        this.x = d3.scaleLinear()
-            .range([0, this.width-2])
-            .domain((this.options.x.domain ? this.options.x.domain : this._extent(this.options.x.name, this.options.x.scale)));
-        this.xValues = this._unique(this.options.data.map(d => d[this.options.x.name]));
-        
-        // Define y-axis
-        this.y = d3.scaleLinear()
-            .range([height-4, 0])
-            .domain(this.options.y.domain ? this.options.y.domain : this._extent(this.options.y.name, this.options.y.scale));
-        
-        // Remove existing
-        this.svg.selectAll('g.sparkline').remove();
-
-        // Change svg and g container
-        this.container.attr('style','vertical-align:middle; display:inline-block;');
-        this.g.attr('transform', 'translate(0,2)')
-            .attr('class','sparkline');
-
-
-        // Add range
-        if (this.options.sparkline.range) {
-            let dataRange = this.options.data.map(d => {d.minRange = this.options.sparkline.range[0]; d.maxRange = this.options.sparkline.range[1]; return d;});
-            this.g.append('path')
-                .datum(dataRange)
-                .attr('fill', this.options.sparkline['range-fill-color'])
-                .attr('stroke','none')
-                .attr('d', d3.area()
-                      .x(d => this.x(d[this.options.x.name]))
-                      .y0(d => this.y(d.minRange))
-                      .y1(d => this.y(d.maxRange)));
-        }
-        
-        // Add sparkline
-        this.sparkLine = this.g.append('path')
-            .datum(this.options.data)
-            .attr('class', 'sparkLine')
-            .attr('fill', 'none')
-            .attr('stroke-width', this.options.sparkline["stroke-width"])
-            .attr('stroke', this.options.sparkline["line-color"])
-            .attr('d',d3.line()
-                  .curve(d3.curveBasis)
-                  .x(d => this.x(d[this.options.x.name]))
-                  .y(d => this.y(d[this.options.y.name])));
-
-        // Add point and circle
-        this.lastPoint = this.options.data.slice(-1)[0];
-        this.sparkCircle = this.g.append('circle')
-            .attr('class','sparkCircle')
-            .attr('cx', this.x(this.lastPoint[this.options.x.name]))
-            .attr('cy', this.y(this.lastPoint[this.options.y.name]))
-            .attr('r', 1.5)
-            .attr('fill', this.options.sparkline["circle-color"])
-            .attr('stroke', 'none');
-        if (this.options.sparkline.textLastPoint) {
-            this.sparkText = d3.select(`#${this.id}`)
-                .append('span')
-                .attr('class','sparkText')
-                .text(this.options.y.tickFormat(this.lastPoint[this.options.y.name]))
-                .attr('style', `font-size:${this.options.sparkline['text-font-size']}; font-weight:${this.options.sparkline['text-font-weight']}; color: ${this.options.sparkline['text-color']}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block;`);
-        }
-        if (this.options.y.label) {
-            this.sparkText = d3.select(`#${this.id}`)
-                .append('span')
-                .attr('class','sparkText')
-                .text(this.options.y.label)
-                .attr('style', `font-size:${this.options.sparkline['text-font-size']}; font-weight:${this.options.sparkline['text-font-weight']}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
-        }
-    };
-    
-    // Draw
-    this.draw = function(options=null) {
-
-        if (options) {
-            this.updateOptions(options);
-        }
-
-        this._setMargin();
-        
-        // Clean
-        this.g.selectAll('g.x.axis').remove();
-        this.g.selectAll('g.y.axis').remove();
-        this.g.selectAll('g.yGrid').remove();
-
-        
-        // Add axis & grid
-        if (this.options.type == "sparkline") {
-            this.sparkline();
-            this.addTooltip();
-        } else {
-            this.addX();
-            if (this.options.type == "bar") {
-                this.addX2();
-            }
-            if (this.options.x.label) {
-                this.addXLabel();
-            }
-            this.addY();
-            if (this.options.y.label) {
-                this.addYLabel();
-            }
-            
-            // Add content      
-            this._drawContent();
-
-            // Add tooltip & legend
-            this.addTooltip();
-            this.addLegend();
-        }
-    };
-
-    // Download data
-    this.downloadData = function() {
-        let domEl = document.createElement('a');
-        domEl.id = "download";
-        domEl.download = this.options.download.name;
-        domEl.href = URL.createObjectURL(new Blob([to_csv(this.options.data)]));
-        domEl.click();
-    };
+    }
 }
