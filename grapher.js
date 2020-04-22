@@ -1,5 +1,5 @@
 /* 
- * Grapher - Plotting library
+ * Grapher - Tiny wrapper around D3.js for line and bar charts
  * @copyright Louis de Charsonville 2020
  */
 
@@ -37,16 +37,22 @@
  *   Default is to take all unique values in options.data
  * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
  * @param {Object} options.style list of options for styling the elements of the graph
- * @param {Array<string>} [options.style.colors] List of colors for the lines, bars, dots (not applicable for sparkline).
+ * @param {Array<string>} options.style.colors List of colors for the lines, bars, dots (not applicable for sparkline).
 *    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
  * @param {number} [options.style.barWidth=0.8] Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars.
  * @param {number} [options.style.strokeWidth=3] - stroke-width of the line. Default is 3px
  * @param {number} [options.style.dotSize=4] - dot-size of the dots. Default is 4px 
- * @param {Boolean} [options.style.grid=true] - Whether to display the y-axis grid
  * @param {string} [options.style.tooltipColor="#181818"] - Text color in the tooltip
  * @param {string} [options.style.tooltipBackgroundColor="#ffffff"] - Background color of the tooltip
  * @param {string} [options.style.tooltipOpacity="0.8"] - Opacity of the tooltip. Default is 0.8 (80%)
- * @param {string} [options.tooltipLineColor="#000000"] - Color of the vertical line color
+ * @param {string} [options.style.tooltipLineColor="#000000"] - Color of the vertical line color
+ * @param {Object} options.grid - Options for the grid
+ * @param {Object} options.grid.x - Options for grid on the x-axis
+ * @param {Boolean} [options.grid.x.show=false] - if true, grid will be added (same frequency as ticks)
+ * @param {{x:string, label: string, position:string, y: string, textAnchor: string, class: string}[]} [options.grid.x.lines=[]] - Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
+ * @param {Object} options.grid.y - Options for grid on the y-axis
+ * @param {Boolean} [options.grid.y.show=true] - if true, grid will be added (same frequency as ticks)
+ * @param {{y:string, label: string, position:string, x: string, textAnchor: string, class: string}[]} [options.grid.y.lines=[]] - Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
  * @param {Object} options.legend - Options for the legend 
  * @param {Boolean} [options.legend.hide=false] - hide legend 
  * @param {number} [options.legend.x=15] - legend's x position in the svg 
@@ -108,6 +114,7 @@ class Grapher {
         this.svg = this.container
             .append("svg")
             .attr("id", this.id + '_svg')
+            .attr('class','grapher')
             .attr("width", this.width)
             .attr("height", this.height);
 
@@ -180,6 +187,16 @@ class Grapher {
                 "textFontSize": "85%",
                 "textFontWeight": "600",
                 "rangeFillColor": "#ccc"
+            },
+            "grid": {
+                "x": {
+                    "show": false,
+                    "lines": []
+                },
+                "y":{
+                    "show": true,
+                    "lines": []
+                }
             }
         };
         // Update options
@@ -244,6 +261,7 @@ class Grapher {
             .attr("height", this.innerHeight);
     };
 
+
     /** 
      * Gets and sets the option for `Grapher` object.
      * @name options
@@ -255,19 +273,7 @@ class Grapher {
         return this._options;
     }
     set options(opt) {
-        for (const key of Object.keys(opt)) {
-            if (Object.keys(this._options).indexOf(key) > -1) {
-                if (this._options[key].constructor == Object) { // true if _options[key] is a dict
-                    for (const subkey of Object.keys(opt[key])) {
-                        if (Object.keys(this._options[key]).indexOf(subkey) > -1) {
-                            this._options[key][subkey] = opt[key][subkey];
-                        }
-                    }
-                } else {
-                    this._options[key] = opt[key];
-                }
-            }
-        }
+        Grapher.updateDict(this._options, opt);
         if (! opt.category && ! this._options.category.name) {
             opt.categories = ['category'];
         }
@@ -379,6 +385,23 @@ class Grapher {
         return `.${Math.abs(Math.floor(Math.log10((n > 0 ? n : 1))))+1}%`;
     }
     
+    /**
+     * Update a nested Object
+     * @param {Object} dict - Object to update with values in newDict
+     * @param {Object} newDict - Object containing key:values to update dict with 
+     */
+    static updateDict(dict,newDict) {
+        for (const key of Object.keys(newDict)) {
+            if (Object.keys(dict).indexOf(key) > -1) {
+                if (newDict[key].constructor == Object) {
+                    Grapher.updateDict(dict[key], newDict[key]);
+                } else {
+                    dict[key] = newDict[key];
+                }
+            }
+        }
+    }
+    
     // Drawing methods
     // ===============
     sparkline() {
@@ -484,6 +507,13 @@ class Grapher {
             if (this._options.y.label) {
                 this.addYLabel();
             }
+
+            if (this._options.grid.y.lines.length > 0) {
+                this.addYGridLines();
+            }
+            if (this._options.grid.x.lines.length > 0) {
+                this.addXGridLines();
+            }
             
             // Add content      
             this._draw();
@@ -527,8 +557,8 @@ class Grapher {
                   .ticks(this.xNbTicks)
                   .tickFormat(this._options.x.tickFormat)
                  );
-        // add horizontal line to complete x axis when there is no grid
-        if (!this._options.style.grid) {
+        // in case of bars, x-axis doesn't fill the width
+        if (this._options.type == "bar") {
             this.g.append("g")
                 .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.innerHeight + 0.5})`)
@@ -536,6 +566,9 @@ class Grapher {
                 .append('line')
                 .attr('stroke','currentColor')
                 .attr('x2', this.innerWidth);
+        }
+        if (this._options.grid.x.show) {
+            this.addXGrid();
         }
     }
     addXLabel() {
@@ -568,10 +601,10 @@ class Grapher {
             .call(d3.axisLeft(this.y)
                   .tickFormat(this._options.y.tickFormat));
         // Define Y grid
-        if (this._options.style.grid) {
+        if (this._options.grid.y.show) {
             this.addYGrid();
         }
-        // Add X axis at 0
+        // Add horizontal line at X = 0
         if (this.y.domain()[0] < 0 && this._options.type == "bar") {
             this.g.append("g")
                 .attr("class","x axis")
@@ -592,12 +625,85 @@ class Grapher {
             .call(g => g.selectAll(".tick:not(:first-of-type) line")
                   .attr("stroke-opacity", 0.5)
                   .attr("stroke-dasharray", "2,2"))
+            .call(g => g.selectAll(".tick:first-of-type line").remove())
             .call(g => g.selectAll(".tick text")
-                  .remove());
+                  .remove())
+            .call(g => g.selectAll(".tick line")
+                  .attr('class','y-grid'));
         // Add Y-Grid to svg
         this.g.append("g")
             .attr('class','yGrid')
             .call(this.yGrid);
+    }
+    addXGrid() {
+        // Define X grid
+        this.xGrid = svg => svg
+            .call(d3.axisBottom(this.x)
+                  .tickSize(this.innerHeight)
+                  .ticks(this.xNbTicks)
+                  .tickFormat(this._options.x.tickFormat))
+            .call(g => g.selectAll('.domain').remove())
+            .call(g => g.selectAll(".tick:not(:first-of-type) line")
+                  .attr("stroke-opacity", 0.5)
+                  .attr("stroke-dasharray", "2,2"))
+            .call(g => g.selectAll(".tick:first-of-type line").remove())
+            .call(g => g.selectAll(".tick text")
+                  .remove())
+            .call(g => g.selectAll(".tick line")
+                  .attr('class','x-grid'));
+        // Add Y-Grid to svg
+        this.g.append("g")
+            .attr('class','xGrid')
+            .call(this.xGrid);
+    }
+    addYGridLines() {
+        for (const line of this._options.grid.y.lines) {
+            this.g.append("g")
+                .attr("class",`y grid-line ${line.class || ""}`)
+                .attr("transform", `translate(0, ${this.y(line.y)})`)
+                .attr("opacity","1")
+                .append('line')
+                .attr("class",`${line.class || ""}`)
+                .attr('stroke','currentColor')
+                .attr('x2', this.innerWidth);
+            if (line.label) {
+                line.textAnchor = line.textAnchor || (line.position || "middle");
+                line.x = this.x(line.x) || (line.position ? line.position == "middle" ? this.innerWidth/2 : line.position == "start" ? this.margin.left : this.innerWidth - this.margin.right : this.margin.left);
+                this.g.append("text")
+                    .attr("y", this.y(line.y))
+                    .attr("x", line.x)
+                    .attr("dy", "1em")
+                    .attr("class",`grid-line-label ${line.class || ""}`)
+                    .attr("style","font-size:0.8rem")
+                    .style("text-anchor", line.textAnchor)
+                    .text(line.label);
+            }
+        }
+    }
+    addXGridLines() {
+        for (const line of this._options.grid.x.lines) {
+            this.g.append("g")
+                .attr("class",`x grid-line ${line.class || ""}`)
+                .attr("transform", `translate(${this.x(line.x)}, 0)`)
+                .attr("opacity","1")
+                .append('line')
+                .attr("class",`${line.class || ""}`)
+                .attr('stroke','currentColor')
+                .attr('y2', this.innerHeight);
+            if (line.label) {
+                line.textAnchor = line.textAnchor || (line.position || "middle");
+                line.y = this.y(line.y) || (line.position ? line.position == "middle" ? this.innerHeight/2 : line.position == "start" ? this.innerHeight - this.margin.top : this.margin.top : this.margin.top);
+                this.g.append("text")
+                    .attr("transform", `rotate(-90,${this.x(line.x)},${line.y})`)
+                    .attr("y", line.y)
+                    .attr("x", this.x(line.x))
+                    .attr("dy", "1em")
+                    .attr("class",`grid-line-label ${line.class || ""}`)
+                    .attr("style","font-size:0.8rem")
+                    .style("text-anchor", line.textAnchor)
+                    .text(line.label);
+            }
+        }
     }
     addYLabel() {
         // Add Title for X axis
