@@ -17,12 +17,13 @@
  * @param {Array<Object>} [options.data=[]] Array of JSON containing the data
  * @param {Object} options.x - Set of options for the x axis
  * @param {string} [options.x.name=x] Name of the x-axis variable in options.data
- * @param {string} [options.x.scale="scaleLinear"] - d3-scale (https://github.com/d3/d3-scale)
+ * @param {string} [options.x.scale="scaleLinear"] - d3-scale, see {@link https://github.com/d3/d3-scale|d3-scale on Github}
  * @param {function|null} [options.x.parse=null] - Function to parse the data (useful if x-axis is a date)
  * @param {function|null} [options.x.tickFormat=null] - Function to format the variable when displayed as tick or in tooltip
  * @param {string|null} [options.x.label=null] - Label for x-axis
  * @param {Array<number>|null} [options.x.domain=null] - Hardcode the x-axis bound. 
  * Default is to use min and max of x values in options.data
+ * @param {Boolean} [options.x.nice=true] - Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see {@link https://github.com/d3/d3-scale#continuous_nice|d3-scale on Github}
  * @param {Object} options.y - Set of options for the y axis
  * @param {string} [options.y.name=x] name of the y-axis variable in options.data
  * @param {string} [options.y.scale="scaleLinear"] d3-scale, see {@link https://github.com/d3/d3-scale|d3-scale on Github}
@@ -30,6 +31,7 @@
  * @param {function|null} [options.y.tickFormat=null] function to format the variable when displayed as tick or in tooltip
  * @param {string|null} [options.y.label=null] label for y-axis
  * @param {Array<number>|null} [options.y.domain=null] Hardcode the y-axis bound. Default is to use min and max of y values in options.data
+ * @param {Boolean} [options.y.nice=true] - Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see {@link https://github.com/d3/d3-scale#continuous_nice|d3-scale on Github}
  * @param {Object} options.category set of options for category
  * @param {string|null} [options.category.name=null] name of the category variable in options.data
  * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
@@ -54,7 +56,7 @@
  * @param {Boolean} [options.grid.y.show=true] - if true, grid will be added (same frequency as ticks)
  * @param {{y:string, label: string, position:string, x: string, textAnchor: string, class: string}[]} [options.grid.y.lines=[]] - Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
  * @param {Object} options.legend - Options for the legend 
- * @param {Boolean} [options.legend.hide=false] - hide legend 
+ * @param {Boolean} [options.legend.show=true] - show legend. If false, legend will not be displayed.
  * @param {number} [options.legend.x=15] - legend's x position in the svg 
  * @param {number} options.legend.y - legend's y position in the svg. Default value equals the margin-top of the g element inside the svg.
  * @param {number} [options.legend.interstice=25] - space in px between the legend items
@@ -72,6 +74,9 @@
  * @param {string} [options.sparkline.textColor="#f00"] - text's color of the last point value displayed next to the sparkline
  * @param {string} [options.sparkline.textFontSize="85%"] - text's font size
  * @param {string} [options.sparkline.textFontWeight="600"] - text's font weight
+ * @param {string} [options.sparkline.rangeFillColor="#ccc"] - range's band fill color
+ * @param {Object} options.advanced - Advanced options
+ * @param {Array<string>} [options.advanced.additionalColumnsInData=[]] - Grapher will only keep x, y and category when parsing the data. Passing columns names here will preserve them in the data.
  * @param {string} [options.sparkline.rangeFillColor="#ccc"] - range's band fill color
  * @param {number} [width=null] width of the DOM element (if not already setup in HTML or CSS)
  * @param {number} [height=null] height of the DOM element (if not already setup in HTML or CSS)
@@ -139,7 +144,8 @@ class Grapher {
                 "tickFormat": d3.format('.3s'),
                 "parse": null,
                 "label": null,
-                "domain": null
+                "domain": null,
+                "nice": false
             },
             "y": {
                 "name": "y",
@@ -147,7 +153,8 @@ class Grapher {
                 "tickFormat": d3.format('.3s'),
                 "parse": null,
                 "label": null,
-                "domain": null
+                "domain": null,
+                "nice": true
             },
             "category": {
                 "name": null,
@@ -164,10 +171,11 @@ class Grapher {
                 "tooltipColor": "#181818",
                 "tooltipBackgroundColor": "#ffffff",
                 "tooltipOpacity": "0.8",
-                "tooltipLineColor": "#000000"
+                "tooltipLineColor": "#000000",
+                "tooltipFormat": (d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`
             },
             "legend": {
-                "hide": false,
+                "show": true,
                 "x": 15, 
                 "y": this._margin.top,
                 "interstice": 25, // distance between dots
@@ -197,6 +205,9 @@ class Grapher {
                     "show": true,
                     "lines": []
                 }
+            },
+            "advanced": {
+                "additionalColumnsInData": []
             }
         };
         // Update options
@@ -227,7 +238,7 @@ class Grapher {
         } else {
             this._margin = {"top": top,
                             "right": typeof right == "function" ? right(this.width) : right,
-                            "bottom": this._fontSize*2 + 20,
+                            "bottom": bottom || this._fontSize*2 + 20,
                             "left": typeof left == "function" ? left(this.width) : left};
         }
         this._innerDimensions();
@@ -263,7 +274,9 @@ class Grapher {
 
 
     /** 
-     * Gets and sets the option for `Grapher` object.
+     * Gets and sets the option for `Grapher` object. 
+     * Note that setter is called only by `typing myGraph.options = {something};` 
+     * Typing myGraph.options.data = something; do work but setter is not called and data is not parsed again, etc.
      * @name options
      * @param {Object} options @link Grapher
      * @instance
@@ -274,11 +287,15 @@ class Grapher {
     }
     set options(opt) {
         Grapher.updateDict(this._options, opt);
+        
+        // No category is specified, we derive it from y label / name
         if (! opt.category && ! this._options.category.name) {
-            opt.categories = ['category'];
+            this._options.categories = [this._options.y.label] || [this._options.y.name];
         }
-        if (! opt.categories || this._options.categories.length == 0) {
-            this._getCategoriesList();
+
+        // When no list of categories is user-defined, we derive it from the data
+        if (! opt.categories && this._options.categories.length == 0) {
+            this._options.categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
         }
 
         // if user forgot to specify scaleTime while parsing a date
@@ -302,41 +319,43 @@ class Grapher {
             .domain(this._options.categories)
             .range(this._options.style.colors);
 
-        this._parseData();
+        // Finally, parse data (if required);
+        if (! this.data || opt.data || (opt.x && opt.x.parse) || (opt.y && opt.y.parse) || opt.categories) {
+            this._parseData();
+        }
 
         // set margins
-        this.margin = {left:(this._options.y.label ? 80 : 60)};
+        this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._fontSize*2 + 20 : 40)};
     }
-
-
-    _getCategoriesList(data=this._options.data,category=this._options.category.name) {
-        if (! this._options.category.name) {
-            this._options.categories = this._options.y.label ? [this._options.y.label] : [this._options.y.name];
-        } else {
-            this._options.categories = d3.set(data.map(d => d[category])).values();
-        }
-    };
     _parseData() {
-        if (this._options.x.parse || this._options.y.parse) {
-            let data = [];
+        if (this._options.x.parse || this._options.y.parse || this._options.categories.length > 0) {
+            let data = [],
+                filterByCategory = this._options.category.name && this._options.categories.length > 0;
             for (const d of this._options.data) {
-                let _ = {};
-                _[this._options.x.name] = this._options.x.parse ? this._options.x.parse(d[this._options.x.name]) : d[this._options.x.name];
-                _[this._options.y.name] = this._options.y.parse ? this._options.y.parse(d[this._options.y.name]) : d[this._options.y.name];
-                if (this._options.category.name) {
-                    _[this._options.category.name] =  d[this._options.category.name];
-                } else {
-                    _['category'] = this._options.y.label ? this._options.y.label : this._options.y.name;
+                if (! filterByCategory || this._options.categories.indexOf(d[this._options.category.name]) > -1) {
+                    let _ = {};
+                    _[this._options.x.name] = this._options.x.parse ? this._options.x.parse(d[this._options.x.name]) : d[this._options.x.name];
+                    _[this._options.y.name] = this._options.y.parse ? this._options.y.parse(d[this._options.y.name]) : d[this._options.y.name];
+                    if (this._options.category.name) {
+                        _[this._options.category.name] =  d[this._options.category.name];
+                    } else {
+                        _['category'] = this._options.y.label || this._options.y.name;
+                    }
+                    for (const c of this._options.advanced.additionalColumnsInData) {
+                        _[c] = d[c];
+                    }
+                    data.push(_);
                 }
-                data.push(_);
             }
-            this._options.data = data;
-            // update category name in case
+            this.data = data;
+            // update category name in case not set
             this._options.category.name = this._options.category.name || 'category';
+        } else {
+            this.data = JSON.parse(JSON.stringify(this._options.data));
         }
     }
 
-    extent(variable, scale, enforceMinimumAt0=false, data=this._options.data) {
+    extent(variable, scale, enforceMinimumAt0=false, data=this.data) {
         if (scale == "scaleLog") {
             let min = d3.min(data.filter(d => d[variable] > 0), d => d[variable]),
                 max = d3.max(data, d => d[variable]);
@@ -376,13 +395,22 @@ class Grapher {
         if (arr.every(e => e instanceof Date)) {
             let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
             return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
+        } else if (arr.every(e => typeof e == "number")){
+            return Array.from(new Set(arr)).sort((a,b) => a-b);
         } else {
             return Array.from(new Set(arr)).sort();
         }
     }
-    
-    static getOptimalPrecision(n) {
-        return `.${Math.abs(Math.floor(Math.log10((n > 0 ? n : 1))))+1}%`;
+    /**
+     * Get optimal decimal precision for number formatting
+     * @param {number} maxN - maximum number in the data
+     * @returns {string} - optimal format for d3.format
+     */
+    static getOptimalPrecision(maxN) {
+        return `.${Math.abs(Math.floor(Math.log10((maxN > 0 ? maxN : 1))))+1}%`;
+    }
+    static formatTick(isLogScale, isPercentage) {
+        return (d => isLogScale ? (Number.isInteger(Math.log10(d)) ? d3.format('.3s')(d) : null) : d3.format(isPercentage ? Grapher.getOptimalPrecision(d) : '.3s')(d));
     }
     
     /**
@@ -393,7 +421,7 @@ class Grapher {
     static updateDict(dict,newDict) {
         for (const key of Object.keys(newDict)) {
             if (Object.keys(dict).indexOf(key) > -1) {
-                if (newDict[key].constructor == Object) {
+                if (newDict[key] != null && newDict[key].constructor == Object) {
                     Grapher.updateDict(dict[key], newDict[key]);
                 } else {
                     dict[key] = newDict[key];
@@ -410,7 +438,7 @@ class Grapher {
         this.x = d3.scaleLinear()
             .range([0, this.width-2])
             .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
-        this.xValues = Grapher.unique(this._options.data.map(d => d[this._options.x.name]));
+        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
         
         // Define y-axis
         this.y = d3.scaleLinear()
@@ -428,7 +456,7 @@ class Grapher {
 
         // Add range
         if (this._options.sparkline.range) {
-            let dataRange = this._options.data.map(d => {d.minRange = this._options.sparkline.range[0]; d.maxRange = this._options.sparkline.range[1]; return d;});
+            let dataRange = this.data.map(d => {d.minRange = this._options.sparkline.range[0]; d.maxRange = this._options.sparkline.range[1]; return d;});
             this.g.append('path')
                 .datum(dataRange)
                 .attr('fill', this._options.sparkline.rangeFillColor)
@@ -441,7 +469,7 @@ class Grapher {
         
         // Add sparkline
         this.sparkLine = this.g.append('path')
-            .datum(this._options.data)
+            .datum(this.data)
             .attr('class', 'sparkLine')
             .attr('fill', 'none')
             .attr('stroke-width', this._options.sparkline.strokeWidth)
@@ -452,7 +480,7 @@ class Grapher {
                   .y(d => this.y(d[this._options.y.name])));
 
         // Add point and circle
-        this.lastPoint = this._options.data.slice(-1)[0];
+        this.lastPoint = this.data.slice(-1)[0];
         this.sparkCircle = this.g.append('circle')
             .attr('class','sparkCircle')
             .attr('cx', this.x(this.lastPoint[this._options.x.name]))
@@ -518,36 +546,67 @@ class Grapher {
             // Add content      
             this._draw();
 
+            
             // Add tooltip & legend
             this.addTooltip();
-            this.addLegend();
+            if (this._options.legend.show) {
+                this.addLegend();
+            }
+            
         }
     }
     /** 
      * Download the data associated with the Grapher element
      *
      */
-    static downloadData() {
+    downloadData() {
         let domEl = document.createElement('a');
         domEl.id = "download";
-        domEl.download = this._options.download.name;
-        domEl.href = URL.createObjectURL(new Blob([to_csv(this._options.data)]));
+        domEl.download = this._options.download.filename;
+        domEl.href = URL.createObjectURL(new Blob([Grapher.to_csv(this.data)]));
         domEl.click();
     };
+    /** 
+     * Transform a JSON object into a csv
+     * @param {Array<Object>} j - Array of objects, each object should has the same number of keys (and each key is going to be a column). 
+     *   Each element of the array is going to be a line.
+     * @param {Boolean} [header=true] - If true, first line of the csv fine will be a header composed of the first object keys
+     * @returns {String} - return a csv file as a string
+     */
+    static to_csv(j,header=true) {
+        let csv = '';
+        if (j.length > 0) {
+            let keys = Object.keys(j[0]);
+            if (header) {
+                csv += keys.join(',') + "\n";
+            }
+            csv += j.map(function(d) {
+                let a = [];
+                for (const k of keys) {
+                    a.push('"' + d[k] + '"');
+                }
+                return a.join(',');
+            }).join('\n');
+        }
+        return csv.toString();
+    }
 
     // Graph internal methods
     // =======================
     addX() {
         // (i) Find the width
-        this.xValues = Grapher.unique(this._options.data.map(d => d[this._options.x.name]));
+        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
         this.xNbValues = this.xValues.length;
         this.xWidth = this.innerWidth / this.xNbValues;
         this.xRange = this._options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
         this.xNbTicks = d3.min([parseInt((this.width - 100) / 100), this.xNbValues]);
         this.x = d3[this._options.x.scale]()
             .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
-            .nice()
             .range(this.xRange);
+
+        if (this._options.x.nice) {
+            this.x = this.x.nice();
+        }
 
         // add X axis to svg
         this.g.append("g")
@@ -588,12 +647,15 @@ class Grapher {
 
     addY() {
         this.yVar = this._options.y.name;
-
+        
         // Define Y Axis
         this.y = d3[this._options.y.scale]()
             .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale, this._options.type == "bar"))
-            .nice()
             .range([this.innerHeight, 0]);
+
+        if (this._options.y.nice) {
+            this.y = this.y.nice();
+        }
 
         // Add Y axis to svg
         this.g.append("g")
@@ -616,9 +678,13 @@ class Grapher {
         }
     }
     addYGrid() {
+        // Find best number of ticks
+        this.yNbTicks = this._options.y.scale == "scaleLog" ? Math.round(Math.log10(this.y.domain()[1]) - Math.log10(this.y.domain()[0])): parseInt(this.innerHeight / 40);
+        
         // Define Y grid
         this.yGrid = svg => svg
             .call(d3.axisRight(this.y)
+                  .ticks(this.yNbTicks)
                   .tickSize(this.innerWidth)
                   .tickFormat(this._options.y.tickFormat))
             .call(g => g.selectAll('.domain').remove())
@@ -668,10 +734,10 @@ class Grapher {
                 .attr('x2', this.innerWidth);
             if (line.label) {
                 line.textAnchor = line.textAnchor || (line.position || "middle");
-                line.x = this.x(line.x) || (line.position ? line.position == "middle" ? this.innerWidth/2 : line.position == "start" ? this.margin.left : this.innerWidth - this.margin.right : this.margin.left);
+                line.xox = this.x(line.x) || (line.position ? line.position == "middle" ? this.innerWidth/2 : line.position == "start" ? this.margin.left : this.innerWidth - this.margin.right : this.margin.left);
                 this.g.append("text")
                     .attr("y", this.y(line.y))
-                    .attr("x", line.x)
+                    .attr("x", line.xox)
                     .attr("dy", "1em")
                     .attr("class",`grid-line-label ${line.class || ""}`)
                     .attr("style","font-size:0.8rem")
@@ -692,10 +758,10 @@ class Grapher {
                 .attr('y2', this.innerHeight);
             if (line.label) {
                 line.textAnchor = line.textAnchor || (line.position || "middle");
-                line.y = this.y(line.y) || (line.position ? line.position == "middle" ? this.innerHeight/2 : line.position == "start" ? this.innerHeight - this.margin.top : this.margin.top : this.margin.top);
+                line.yoy = this.y(line.y) || (line.position ? line.position == "middle" ? this.innerHeight/2 : line.position == "start" ? this.innerHeight - this.margin.top : this.margin.top : this.margin.top);
                 this.g.append("text")
-                    .attr("transform", `rotate(-90,${this.x(line.x)},${line.y})`)
-                    .attr("y", line.y)
+                    .attr("transform", `rotate(-90,${this.x(line.x)},${line.yoy})`)
+                    .attr("y", line.yoy)
                     .attr("x", this.x(line.x))
                     .attr("dy", "1em")
                     .attr("class",`grid-line-label ${line.class || ""}`)
@@ -723,7 +789,7 @@ class Grapher {
         for (const category of this._options.categories) {
             if (['line','dotted-line'].indexOf(this._options.type) > -1) {
                 this.g.append('path')
-                    .datum(this._options.data.filter(d => d[this._options.category.name] === category))
+                    .datum(this.data.filter(d => d[this._options.category.name] === category))
                     .attr('class','lines')
                     .attr('fill', 'none')
                     .attr('stroke', d => this.color(category))
@@ -735,14 +801,14 @@ class Grapher {
             };
             if (this._options.type == "bar") {           
                 this.g.selectAll(`rect.bar.${category.replace(/ /g,'_')}`)
-                    .data(this._options.data.filter(d => d[this._options.category.name] === category))
+                    .data(this.data.filter(d => d[this._options.category.name] === category))
                     .join('rect')
                     .attr('class', `bar ${category.replace(/ /g,'_')}`)
                     .attr('fill',  d => this.color(category))
                     .attr('x', d => this.x(d[this._options.x.name]) + this.x2(category))
                     .attr('width', this.x2.bandwidth())
                     .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
-                    .attr('height', d => Math.abs(this.y(0) - this.y(d[this._options.y.name])))
+                    .attr('height', d => Math.abs((this.y(0) || this.y(this.y.domain()[0])) - this.y(d[this._options.y.name])))
                     .on("mouseover", function(d) {
 	                d3.select(this).attr("fill", function() {
                             return d3.rgb(d3.select(this).style("fill")).darker(0.5);
@@ -757,7 +823,7 @@ class Grapher {
         };
         if (['dotted-line','dot'].indexOf(this._options.type) > -1) {
             this.g.selectAll("circle")
-                .data(this._options.data)
+                .data(this.data)
                 .join("circle")
                 .style("fill", d => this.color(d[this._options.category.name]))
                 .attr("class","dots")
@@ -813,8 +879,8 @@ class Grapher {
                       .attr("y", (d, i) => `${i * 1.1}em`)
                       .attr("class","tooltip_text")
                       .style("font-weight","bold")
-                      .style("fill",(d, i) => i === 0 ? this._options.style.tooltipColor : this.color(d[this._options.category.name]))
-                      .text((d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name])}`));
+                      .style("fill",(d, i) => i === 0 ? (typeof this._options.style.tooltipColor == "function" ? this._options.style.tooltipColor() : this._options.style.tooltipColor) : this.color(d[this._options.category.name]))
+                      .text((d,i) => this._options.style.tooltipFormat(d,i)));
         } else {
             text = g.selectAll("text")
                 .data([null])
@@ -857,7 +923,7 @@ class Grapher {
 
         // console.log(mouseXValue_, mouseIndex, a, b);
         let mouseXValue = mouseXValue_ - a > b - mouseXValue_ ? b : a,
-            mouseYValues = this._options.data.filter(d => d[this._options.x.name].toString() == mouseXValue.toString())
+            mouseYValues = this.data.filter(d => d[this._options.x.name].toString() == mouseXValue.toString())
             .sort((a,b) => b[this._options.y.name] - a[this._options.y.name]);
         return [mouseXValue].concat(mouseYValues);
     }

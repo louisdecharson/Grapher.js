@@ -2,1599 +2,1857 @@
 <html>
 <head>
 	<meta charset='utf-8' />
-	<title>Grapher 0.0.2 | Documentation</title>
+	<title>Grapher 0.0.3 | Documentation</title>
 	<meta name='description' content='A minimal wrapper around D3.js to do line and bar plots.'>
 	<meta name='viewport' content='width=device-width,initial-scale=1'>
 	<link href='assets/styles.min.css' rel='stylesheet' />
 </head>
 
 <body class='documentation'>
-    <div class='px2'>
+<div class='px2'>
 	<div class='clearfix md-flex lg-flex flex-stretch mxn2'>
-	    <div class='documentation-sidebar relative top-0 bottom-0 right-0 px2 py2 col-3 md-show'>
-		<div class='font-smaller fixed col-3 top-0 bottom-0 left-0 overflow-auto fill-light dark-link'>
-		    <div class='px2'>
-			<h3 class='mb0 no-anchor'><code>Grapher</code></h3>
-			<div class='mb1'><code>0.0.2</code></div>
-			<input placeholder='Filter' id='filter-input' class='col12 block input' type='text' />
-			<div id="toc">
-			    
-			    
-			    
-			    <a
-				href='#grapher'
-				      class="regular block toggle-sibling">
-				<code>Grapher</code>
-				<span class='icon'>▾</span>
-			    </a>
-			    
-			    
-			    <div class='toggle-target'>
-				
-				
-				<a
-				    href='#grapherfindtimeformat'
-					  class='button-indent px1 quiet regular rounded block'>
-				    <code>.findTimeFormat</code>
-				</a>
-				
-				<a
-				    href='#grapherunique'
-					  class='button-indent px1 quiet regular rounded block'>
-				    <code>.unique</code>
-				</a>
-				
-				<a
-				    href='#grapherupdatedict'
-					  class='button-indent px1 quiet regular rounded block'>
-				    <code>.updateDict</code>
-				</a>
-				
-				<a
-				    href='#grapherdownloaddata'
-					  class='button-indent px1 quiet regular rounded block'>
-				    <code>.downloadData</code>
-				</a>
-				
-				
-				
-				
-				<a
-				    href='#graphermargin'
-					  class='button-indent regular block'>
-				    <code>#margin</code>
-				</a>
-				
-				<a
-				    href='#grapheroptions'
-					  class='button-indent regular block'>
-				    <code>#options</code>
-				</a>
-				
-				<a
-				    href='#grapherdraw'
-					  class='button-indent regular block'>
-				    <code>#draw</code>
-				</a>
-				
-				
-				
-				
-			    </div>
-			    
-			    
+		<div class='documentation-sidebar relative top-0 bottom-0 right-0 px2 py2 col-3 md-show'>
+			<div class='font-smaller fixed col-3 top-0 bottom-0 left-0 overflow-auto fill-light dark-link'>
+				<div class='px2'>
+					<h3 class='mb0 no-anchor'><code>Grapher</code></h3>
+					<div class='mb1'><code>0.0.3</code></div>
+					<input placeholder='Filter' id='filter-input' class='col12 block input' type='text' />
+					<div id="toc">
+						
+						
+						
+						<a
+								href='#grapher'
+								class="regular block toggle-sibling">
+							<code>Grapher</code>
+							<span class='icon'>▾</span>
+						</a>
+						
+						
+						<div class='toggle-target'>
+							
+							
+							<a
+									href='#grapherfindtimeformat'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.findTimeFormat</code>
+							</a>
+							
+							<a
+									href='#grapherunique'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.unique</code>
+							</a>
+							
+							<a
+									href='#graphergetoptimalprecision'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.getOptimalPrecision</code>
+							</a>
+							
+							<a
+									href='#grapherupdatedict'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.updateDict</code>
+							</a>
+							
+							<a
+									href='#grapherto_csv'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.to_csv</code>
+							</a>
+							
+							
+							
+							
+							<a
+									href='#graphermargin'
+									class='button-indent regular block'>
+								<code>#margin</code>
+							</a>
+							
+							<a
+									href='#grapheroptions'
+									class='button-indent regular block'>
+								<code>#options</code>
+							</a>
+							
+							<a
+									href='#grapherdraw'
+									class='button-indent regular block'>
+								<code>#draw</code>
+							</a>
+							
+							<a
+									href='#grapherdownloaddata'
+									class='button-indent regular block'>
+								<code>#downloadData</code>
+							</a>
+							
+							
+							
+							
+						</div>
+						
+						
+					</div>
+					<div class='mt1 h6 quiet'>
+						<a href='https://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+					</div>
+				</div>
+
 			</div>
-			<div class='mt1 h6 quiet'>
-			    <a href='https://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
-			</div>
-		    </div>
-
 		</div>
-	    </div>
-	    <div class='sm-col-12 md-col-9 lg-col-9 flex flex-column'>
-		<div class='flex-auto full-width'>
-		    
-		    
-		    <section id='grapher'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                <div class='right py2'>
-		            
-		            
-		            <span class="px2"></span>
-		            <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L96-L937'>
-			        <span>grapher.js</span>
-		            </a>
-		            
-	                </div>
-
-	                <h3 class='regular'>
-		            <a class='black' href='#grapher'>
-			        <code>
-				Grapher
-				    <span class='gray'>(id, options, width, height)</span>
-			        </code>
-		            </a>
-	                </h3>
-
-	                <p>The <code>Grapher</code> object represents the graph.</p>
-                        <p>You create a <code>Grapher</code> by specifying a <code>container</code> (a DOM element)
-                            that will contain the graph, and other options.</p>
-
-	                
-
-	                
-	                
-	                
-	                
-	                
-	                
-
-	                
-	                <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		            <thead class='fill-light'>
-		                <th class='col-3 small caps quiet'>parameter</th>
-		                <th class='col-3 small caps quiet'>type</th>
-		                <th class='col-6 small caps quiet'>description</th>
-		            </thead>
-		            
-		            <tr>
-			        <td class='col-3 strong'><code>id</code></td>
-			        <td class='col-3 quiet'>
-				    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-				    
-			        </td>
-			        <td class='col-6'>of the DOM element
-                                </td>
-		            </tr>
-		            
-		            
-		            <tr>
-			        <td class='col-3 strong'><code>options</code></td>
-			        <td class='col-3 quiet'>
-				    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-				    
-			        </td>
-			        <td class='col-6'>Set of options for the graph.
-                                </td>
-		            </tr>
-		            
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.data</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>>
-                                    
-                                    (default <code>[]</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Array of JSON containing the data
-                                </td>
-                            </tr>
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.x</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Set of options for the x axis
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.name</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>x</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Name of the x-axis variable in options.data
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.scale</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;scaleLinear&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>d3-scale (
-                                    <a href="https://github.com/d3/d3-scale">https://github.com/d3/d3-scale</a>
-                                    )
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.parse</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Function to parse the data (useful if x-axis is a date)
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.tickFormat</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Function to format the variable when displayed as tick or in tooltip
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.label</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Label for x-axis
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.x.domain</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Hardcode the x-axis bound.
-                                    Default is to use min and max of x values in options.data
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.y</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Set of options for the y axis
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.name</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>x</code>)
-                                    
-                                </td>
-                                <td class='col-8'>name of the y-axis variable in options.data
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.scale</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;scaleLinear&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>d3-scale, see 
-                                    <a href="https://github.com/d3/d3-scale">d3-scale on Github</a>
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.parse</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>function to parse the data (useful if y-axis is a date)
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.tickFormat</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>function to format the variable when displayed as tick or in tooltip
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.label</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>label for y-axis
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.y.domain</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Hardcode the y-axis bound. Default is to use min and max of y values in options.data
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.category</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>set of options for category
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.category.name</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>name of the category variable in options.data
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.category.parse</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>
-                                    
-                                    (default <code>(d=&gt;d)</code>)
-                                    
-                                </td>
-                                <td class='col-8'>function to parse (or format) the category variable when displayed in tooltip
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.categories</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>>
-                                    
-                                    (default <code>[]</code>)
-                                    
-                                </td>
-                                <td class='col-8'>hardcode the list of elements of the 'category' variable.
-                                    Default is to take all unique values in options.data
-                                </td>
-                            </tr>
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.type</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;line&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
-                                </td>
-                            </tr>
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.style</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>list of options for styling the elements of the graph
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.colors</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>>
-                                    
-                                </td>
-                                <td class='col-8'>List of colors for the lines, bars, dots (not applicable for sparkline).
-                                    Default is 
-                                    ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.barWidth</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>0.8</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars.
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.strokeWidth</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>3</code>)
-                                    
-                                </td>
-                                <td class='col-8'>stroke-width of the line. Default is 3px
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.dotSize</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>4</code>)
-                                    
-                                </td>
-                                <td class='col-8'>dot-size of the dots. Default is 4px
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.tooltipColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#181818&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Text color in the tooltip
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.tooltipBackgroundColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#ffffff&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Background color of the tooltip
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.tooltipOpacity</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;0.8&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Opacity of the tooltip. Default is 0.8 (80%)
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.style.tooltipLineColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#000000&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Color of the vertical line color
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.grid</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Options for the grid
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.x</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Options for grid on the x-axis
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.x.show</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
-                                    
-                                    (default <code>false</code>)
-                                    
-                                </td>
-                                <td class='col-8'>if true, grid will be added (same frequency as ticks)
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.x.lines</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{x: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, label: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, y: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, textAnchor: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, class: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>}>
-                                    
-                                    (default <code>[]</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
-                                </td>
-                            </tr>
-
-
-                            
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.y</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Options for grid on the y-axis
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.y.show</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
-                                    
-                                    (default <code>true</code>)
-                                    
-                                </td>
-                                <td class='col-8'>if true, grid will be added (same frequency as ticks)
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.grid.y.lines</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{y: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, label: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, x: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, textAnchor: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, class: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>}>
-                                    
-                                    (default <code>[]</code>)
-                                    
-                                </td>
-                                <td class='col-8'>Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
-                                </td>
-                            </tr>
-
-
-                            
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.legend</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>Options for the legend
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.hide</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
-                                    
-                                    (default <code>false</code>)
-                                    
-                                </td>
-                                <td class='col-8'>hide legend
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.x</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>15</code>)
-                                    
-                                </td>
-                                <td class='col-8'>legend's x position in the svg
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.y</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                </td>
-                                <td class='col-8'>legend's y position in the svg. Default value equals the margin-top of the g element inside the svg.
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.interstice</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>25</code>)
-                                    
-                                </td>
-                                <td class='col-8'>space in px between the legend items
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.backgroundColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#ffffff&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>legend's background color
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.legend.opacity</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;0.9&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>opacity of the legend
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.download</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>options for downloading data associated with the graph
-                                </td>
-                            </tr>
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.filename</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;data_&lt;elementId&gt;_&lt;date&gt;.csv&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>filename for the csv linked to the data
-                                </td>
-                            </tr>
-
-
-		            
-		            <tr>
-                                <td class='col-2 strong'>options.sparkline</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-                                    
-                                </td>
-                                <td class='col-8'>options for the sparkline object
-                                </td>
-                            </tr>
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.range</td>
-                                <td class="col-2 quiet">
-                                    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
-                                    
-                                    (default <code>null</code>)
-                                    
-                                </td>
-                                <td class='col-8'>range for the background's
-                                    band displayed in the sparkline. If null, not the band is not displayed.
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.textLastPoint</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
-                                    
-                                    (default <code>true</code>)
-                                    
-                                </td>
-                                <td class='col-8'>display the last point's value as adjacent text.
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.strokeWidth</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-                                    
-                                    (default <code>1</code>)
-                                    
-                                </td>
-                                <td class='col-8'>stroke's width of the sparkline
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.lineColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#000000&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>line's color of the sparkline
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.circleColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#f00&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>circle's color for the last point of the sparkline
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.textColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#f00&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>text's color of the last point value displayed next to the sparkline
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.textFontSize</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;85%&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>text's font size
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.textFontWeight</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;600&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>text's font weight
-                                </td>
-                            </tr>
-
-
-                            
-                            <tr>
-                                <td class='col-2 strong'>options.sparkline.rangeFillColor</td>
-                                <td class="col-2 quiet">
-                                    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                    
-                                    (default <code>&quot;#ccc&quot;</code>)
-                                    
-                                </td>
-                                <td class='col-8'>range's band fill color
-                                </td>
-                            </tr>
-
-
-                            
-
-
-		            
-		            
-		            
-		            <tr>
-			        <td class='col-3 strong'><code>width</code></td>
-			        <td class='col-3 quiet'>
-				    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-				    
-				    = <code>null</code>
-			        </td>
-			        <td class='col-6'>width of the DOM element (if not already setup in HTML or CSS)
-                                </td>
-		            </tr>
-		            
-		            
-		            <tr>
-			        <td class='col-3 strong'><code>height</code></td>
-			        <td class='col-3 quiet'>
-				    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-				    
-				    = <code>null</code>
-			        </td>
-			        <td class='col-6'>height of the DOM element (if not already setup in HTML or CSS)
-                                </td>
-		            </tr>
-		            
-		            
-	                </table>
-	                
-
-	                
-
-	                
-
-	                
-
-	                
-	                <h4 class='caps quiet mb1 mt3'>Examples</h4>
-	                
-	                
-	                <pre class='p1 overflow-auto round fill-light'><code><span class="hljs-keyword">let</span> myGraphExample1 = <span class="hljs-keyword">new</span> Grapher(<span class="hljs-string">'myGraphExample1'</span>,
-                                {<span class="hljs-string">"data"</span>: data,
-                            <span class="hljs-string">"x"</span>: {
-                            <span class="hljs-string">"name"</span>: <span class="hljs-string">"date"</span>,
-                            <span class="hljs-string">"scale"</span>: <span class="hljs-string">"scaleTime"</span>,
-                            <span class="hljs-string">"parse"</span>: <span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> d3.timeParse(<span class="hljs-string">'%Y-%m-%d'</span>)(d),
-                            <span class="hljs-string">"tickFormat"</span>: d3.timeFormat(<span class="hljs-string">"%d/%m/%y"</span>),
-                            <span class="hljs-string">"label"</span>: <span class="hljs-string">"Date"</span>
-                                  },
-                            <span class="hljs-string">"y"</span>: {
-                            <span class="hljs-string">"name"</span>: <span class="hljs-string">"value"</span>,
-                            <span class="hljs-string">"tickFormat"</span>: d3.format(<span class="hljs-string">'.3s'</span>),
-                            <span class="hljs-string">"label"</span>: <span class="hljs-string">"Glucose"</span>
-                                  },
-                            <span class="hljs-string">"type"</span>: <span class="hljs-string">"dotted-line"</span>,
-                                  });</code></pre>
-	                
-	                
-
-	                
-	                <h4 class='caps quiet mb2 mt3'>Static Members</h4>
-	                <div class="section-indent">
-                            
-                            <section id='grapherfindtimeformat'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L362-L368'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapherfindtimeformat'>
-			                <code>
-				findTimeFormat
-				            <span class='gray'>(str)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Return the timeformat in d3.timeParse function</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>str</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-				            
-			                </td>
-			                <td class='col-6'>string containing d3.timeParse(xxx)
-                                        </td>
-		                    </tr>
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-	                        
-	                        <h4 class='caps quiet mb1 mt3'>Returns</h4>
-	                        <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
-	                        :
-	                        <span class='force-inline'>time format argument of d3.timeParse function
-                                </span>
-	                        
-	                        
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                            <section id='grapherunique'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L375-L382'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapherunique'>
-			                <code>
-				unique
-				            <span class='gray'>(arr)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Return unique values of an array (including if there are dates)</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>arr</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>
-				            
-			                </td>
-			                <td class='col-6'>array
-                                        </td>
-		                    </tr>
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-	                        
-	                        <h4 class='caps quiet mb1 mt3'>Returns</h4>
-	                        <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>
-	                        :
-	                        <span class='force-inline'>of unique values of 'arr'
-                                </span>
-	                        
-	                        
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                            <section id='grapherupdatedict'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L393-L403'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapherupdatedict'>
-			                <code>
-				updateDict
-				            <span class='gray'>(dict, newDict)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Update a nested Object</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>dict</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-				            
-			                </td>
-			                <td class='col-6'>Object to update with values in newDict
-                                        </td>
-		                    </tr>
-		                    
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>newDict</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-				            
-			                </td>
-			                <td class='col-6'>Object containing key:values to update dict with
-                                        </td>
-		                    </tr>
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                            <section id='grapherdownloaddata'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L530-L536'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapherdownloaddata'>
-			                <code>
-				downloadData
-				            <span class='gray'>()</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Download the data associated with the Grapher element</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                        </div>
-
-	                
-
-	                
-	                <h4 class='caps quiet mb2 mt3'>Instance Members</h4>
-	                <div class="section-indent">
-                            
-                            <section id='graphermargin'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L218-L220'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#graphermargin'>
-			                <code>
-				margin
-				            <span class='gray'>(margin)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Get and sets the values of the inner margins</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>margin</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-				            
-			                </td>
-			                <td class='col-6'></td>
-		                    </tr>
-		                    
-		                    
-		                    <tr>
-                                        <td class='col-2 strong'>margin.top</td>
-                                        <td class="col-2 quiet">
-                                            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                            
-                                            (default <code>10</code>)
-                                            
-                                        </td>
-                                        <td class='col-8'>margin top
-                                        </td>
-                                    </tr>
-
-
-		                    
-		                    <tr>
-                                        <td class='col-2 strong'>margin.right</td>
-                                        <td class="col-2 quiet">
-                                            (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)
-                                            
-                                            (default <code>(x)=&gt;x&lt;400?20:30</code>)
-                                            
-                                        </td>
-                                        <td class='col-8'>margin right depends of the width of the graph
-                                        </td>
-                                    </tr>
-
-
-		                    
-		                    <tr>
-                                        <td class='col-2 strong'>margin.bottom</td>
-                                        <td class="col-2 quiet">
-                                            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
-                                            
-                                        </td>
-                                        <td class='col-8'>margin bottom
-                                        </td>
-                                    </tr>
-
-
-		                    
-		                    <tr>
-                                        <td class='col-2 strong'>margin.left</td>
-                                        <td class="col-2 quiet">
-                                            (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)
-                                            
-                                            (default <code>(x)=&gt;x&lt;400?40:60</code>)
-                                            
-                                        </td>
-                                        <td class='col-8'>margin left depends of the width of the graph
-                                        </td>
-                                    </tr>
-
-
-		                    
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-	                        
-	                        <h4 class='caps quiet mb1 mt3'>Returns</h4>
-	                        <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>
-	                        :
-	                        <span class='force-inline'>
-                                </span>
-	                        
-	                        
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                            <section id='grapheroptions'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L272-L274'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapheroptions'>
-			                <code>
-				options
-				            <span class='gray'>(options)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Gets and sets the option for <code>Grapher</code> object.</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>options</code></td>
-			                <td class='col-3 quiet'>
-				            <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-				            
-			                </td>
-			                <td class='col-6'>@link Grapher
-                                        </td>
-		                    </tr>
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                            <section id='grapherdraw'class='mt2 mb2 px3 py1 keyline-top'>
-
-	                        <div class='right py2'>
-		                    
-		                    
-		                    <span class="px2"></span>
-		                    <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/9144405b2693e750482884b93d4b5f35ec757ffc/grapher.js#L483-L525'>
-			                <span>grapher.js</span>
-		                    </a>
-		                    
-	                        </div>
-
-	                        <h3 class='regular'>
-		                    <a class='black' href='#grapherdraw'>
-			                <code>
-				draw
-				            <span class='gray'>(options)</span>
-			                </code>
-		                    </a>
-	                        </h3>
-
-	                        <p>Draw the Grapher object</p>
-
-	                        
-
-	                        
-	                        
-	                        
-	                        
-	                        
-	                        
-
-	                        
-	                        <table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
-		                    <thead class='fill-light'>
-		                        <th class='col-3 small caps quiet'>parameter</th>
-		                        <th class='col-3 small caps quiet'>type</th>
-		                        <th class='col-6 small caps quiet'>description</th>
-		                    </thead>
-		                    
-		                    <tr>
-			                <td class='col-3 strong'><code>options</code></td>
-			                <td class='col-3 quiet'>
-				            (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> | null)
-				            
-			                </td>
-			                <td class='col-6'>you can pass an options Object to update the element's option. @link Grapher
-                                        </td>
-		                    </tr>
-		                    
-		                    
-	                        </table>
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-
-	                        
-                            </section>
-
-                            
-                        </div>
-
-	                
-
-	                
-
-	                
-                    </section>
-
-		    
-		    
-		</div>
-	    </div>
+		<div class='sm-col-12 md-col-9 lg-col-9 flex flex-column'>
+			<div class='flex-auto full-width'>
+				
+				
+				<section id='grapher'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L101-L1003'>
+			<span>grapher.js</span>
+		</a>
+		
 	</div>
-    </div>
-    <script src='assets/scripts.min.js'></script>
-    <script async defer src="https://cdn.simpleanalytics.io/hello.js"></script> 
-    <noscript><img src="https://api.simpleanalytics.io/hello.gif" alt=""></noscript>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapher'>
+			<code>
+				Grapher
+				<span class='gray'>(id, options, width, height)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>The <code>Grapher</code> object represents the graph.</p>
+<p>You create a <code>Grapher</code> by specifying a <code>container</code> (a DOM element)
+that will contain the graph, and other options.</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>id</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+			</td>
+			<td class='col-6'>of the DOM element
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>options</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+				
+			</td>
+			<td class='col-6'>Set of options for the graph.
+</td>
+		</tr>
+		
+		
+		<tr>
+  <td class='col-2 strong'>options.data</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>>
+    
+      (default <code>[]</code>)
+    
+  </td>
+  <td class='col-8'>Array of JSON containing the data
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.x</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Set of options for the x axis
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.name</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>x</code>)
+    
+  </td>
+  <td class='col-8'>Name of the x-axis variable in options.data
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.scale</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;scaleLinear&quot;</code>)
+    
+  </td>
+  <td class='col-8'>d3-scale, see 
+<a href="https://github.com/d3/d3-scale">d3-scale on Github</a>
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.parse</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>Function to parse the data (useful if x-axis is a date)
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.tickFormat</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>Function to format the variable when displayed as tick or in tooltip
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.label</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>Label for x-axis
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.domain</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>Hardcode the x-axis bound.
+Default is to use min and max of x values in options.data
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.x.nice</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>true</code>)
+    
+  </td>
+  <td class='col-8'>Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see 
+<a href="https://github.com/d3/d3-scale#continuous_nice">d3-scale on Github</a>
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.y</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Set of options for the y axis
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.name</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>x</code>)
+    
+  </td>
+  <td class='col-8'>name of the y-axis variable in options.data
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.scale</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;scaleLinear&quot;</code>)
+    
+  </td>
+  <td class='col-8'>d3-scale, see 
+<a href="https://github.com/d3/d3-scale">d3-scale on Github</a>
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.parse</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>function to parse the data (useful if y-axis is a date)
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.tickFormat</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>function to format the variable when displayed as tick or in tooltip
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.label</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>label for y-axis
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.domain</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>Hardcode the y-axis bound. Default is to use min and max of y values in options.data
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.y.nice</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>true</code>)
+    
+  </td>
+  <td class='col-8'>Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see 
+<a href="https://github.com/d3/d3-scale#continuous_nice">d3-scale on Github</a>
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.category</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>set of options for category
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.category.name</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>name of the category variable in options.data
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.category.parse</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>
+    
+      (default <code>(d=&gt;d)</code>)
+    
+  </td>
+  <td class='col-8'>function to parse (or format) the category variable when displayed in tooltip
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.categories</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>>
+    
+      (default <code>[]</code>)
+    
+  </td>
+  <td class='col-8'>hardcode the list of elements of the 'category' variable.
+Default is to take all unique values in options.data
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.type</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;line&quot;</code>)
+    
+  </td>
+  <td class='col-8'>type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.style</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>list of options for styling the elements of the graph
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.colors</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>>
+    
+  </td>
+  <td class='col-8'>List of colors for the lines, bars, dots (not applicable for sparkline).
+Default is 
+["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.barWidth</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>0.8</code>)
+    
+  </td>
+  <td class='col-8'>Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars.
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.strokeWidth</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>3</code>)
+    
+  </td>
+  <td class='col-8'>stroke-width of the line. Default is 3px
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.dotSize</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>4</code>)
+    
+  </td>
+  <td class='col-8'>dot-size of the dots. Default is 4px
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.tooltipColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#181818&quot;</code>)
+    
+  </td>
+  <td class='col-8'>Text color in the tooltip
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.tooltipBackgroundColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#ffffff&quot;</code>)
+    
+  </td>
+  <td class='col-8'>Background color of the tooltip
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.tooltipOpacity</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;0.8&quot;</code>)
+    
+  </td>
+  <td class='col-8'>Opacity of the tooltip. Default is 0.8 (80%)
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.style.tooltipLineColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#000000&quot;</code>)
+    
+  </td>
+  <td class='col-8'>Color of the vertical line color
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.grid</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Options for the grid
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.x</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Options for grid on the x-axis
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.x.show</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>false</code>)
+    
+  </td>
+  <td class='col-8'>if true, grid will be added (same frequency as ticks)
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.x.lines</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{x: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, label: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, y: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, textAnchor: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, class: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>}>
+    
+      (default <code>[]</code>)
+    
+  </td>
+  <td class='col-8'>Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
+</td>
+</tr>
+
+
+  
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.y</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Options for grid on the y-axis
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.y.show</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>true</code>)
+    
+  </td>
+  <td class='col-8'>if true, grid will be added (same frequency as ticks)
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.grid.y.lines</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{y: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, label: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, x: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, textAnchor: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, class: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>}>
+    
+      (default <code>[]</code>)
+    
+  </td>
+  <td class='col-8'>Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
+</td>
+</tr>
+
+
+  
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.legend</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Options for the legend
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.show</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>true</code>)
+    
+  </td>
+  <td class='col-8'>show legend. If false, legend will not be displayed.
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.x</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>15</code>)
+    
+  </td>
+  <td class='col-8'>legend's x position in the svg
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.y</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+  </td>
+  <td class='col-8'>legend's y position in the svg. Default value equals the margin-top of the g element inside the svg.
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.interstice</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>25</code>)
+    
+  </td>
+  <td class='col-8'>space in px between the legend items
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.backgroundColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#ffffff&quot;</code>)
+    
+  </td>
+  <td class='col-8'>legend's background color
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.legend.opacity</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;0.9&quot;</code>)
+    
+  </td>
+  <td class='col-8'>opacity of the legend
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.download</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>options for downloading data associated with the graph
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.filename</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;data_&lt;elementId&gt;_&lt;date&gt;.csv&quot;</code>)
+    
+  </td>
+  <td class='col-8'>filename for the csv linked to the data
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.sparkline</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>options for the sparkline object
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.range</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>> | null)
+    
+      (default <code>null</code>)
+    
+  </td>
+  <td class='col-8'>range for the background's
+band displayed in the sparkline. If null, not the band is not displayed.
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.textLastPoint</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+    
+      (default <code>true</code>)
+    
+  </td>
+  <td class='col-8'>display the last point's value as adjacent text.
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.strokeWidth</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+    
+      (default <code>1</code>)
+    
+  </td>
+  <td class='col-8'>stroke's width of the sparkline
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.lineColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#000000&quot;</code>)
+    
+  </td>
+  <td class='col-8'>line's color of the sparkline
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.circleColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#f00&quot;</code>)
+    
+  </td>
+  <td class='col-8'>circle's color for the last point of the sparkline
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.textColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#f00&quot;</code>)
+    
+  </td>
+  <td class='col-8'>text's color of the last point value displayed next to the sparkline
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.textFontSize</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;85%&quot;</code>)
+    
+  </td>
+  <td class='col-8'>text's font size
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.textFontWeight</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;600&quot;</code>)
+    
+  </td>
+  <td class='col-8'>text's font weight
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.rangeFillColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#ccc&quot;</code>)
+    
+  </td>
+  <td class='col-8'>range's band fill color
+</td>
+</tr>
+
+
+  
+    <tr>
+  <td class='col-2 strong'>options.sparkline.rangeFillColor</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>&quot;#ccc&quot;</code>)
+    
+  </td>
+  <td class='col-8'>range's band fill color
+</td>
+</tr>
+
+
+  
+
+
+		
+		<tr>
+  <td class='col-2 strong'>options.advanced</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+    
+  </td>
+  <td class='col-8'>Advanced options
+</td>
+</tr>
+
+  
+    <tr>
+  <td class='col-2 strong'>options.advanced.additionalColumnsInData</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>>
+    
+      (default <code>[]</code>)
+    
+  </td>
+  <td class='col-8'>Grapher will only keep x, y and category when parsing the data. Passing columns names here will preserve them in the data.
+</td>
+</tr>
+
+
+  
+
+
+		
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>width</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+				
+				= <code>null</code>
+			</td>
+			<td class='col-6'>width of the DOM element (if not already setup in HTML or CSS)
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>height</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+				
+				= <code>null</code>
+			</td>
+			<td class='col-6'>height of the DOM element (if not already setup in HTML or CSS)
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+
+	
+
+	
+	<h4 class='caps quiet mb1 mt3'>Examples</h4>
+	
+	
+	<pre class='p1 overflow-auto round fill-light'><code><span class="hljs-keyword">let</span> myGraphExample1 = <span class="hljs-keyword">new</span> Grapher(<span class="hljs-string">'myGraphExample1'</span>,
+                                {<span class="hljs-string">"data"</span>: data,
+                                 <span class="hljs-string">"x"</span>: {
+                                     <span class="hljs-string">"name"</span>: <span class="hljs-string">"date"</span>,
+                                      <span class="hljs-string">"scale"</span>: <span class="hljs-string">"scaleTime"</span>,
+                                      <span class="hljs-string">"parse"</span>: <span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> d3.timeParse(<span class="hljs-string">'%Y-%m-%d'</span>)(d),
+                                      <span class="hljs-string">"tickFormat"</span>: d3.timeFormat(<span class="hljs-string">"%d/%m/%y"</span>),
+                                      <span class="hljs-string">"label"</span>: <span class="hljs-string">"Date"</span>
+                                  },
+                                  <span class="hljs-string">"y"</span>: {
+                                      <span class="hljs-string">"name"</span>: <span class="hljs-string">"value"</span>,
+                                      <span class="hljs-string">"tickFormat"</span>: d3.format(<span class="hljs-string">'.3s'</span>),
+                                      <span class="hljs-string">"label"</span>: <span class="hljs-string">"Glucose"</span>
+                                  },
+                                  <span class="hljs-string">"type"</span>: <span class="hljs-string">"dotted-line"</span>,
+                                  });</code></pre>
+	
+	
+
+	
+	<h4 class='caps quiet mb2 mt3'>Static Members</h4>
+	<div class="section-indent">
+  
+    <section id='grapherfindtimeformat'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L381-L387'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherfindtimeformat'>
+			<code>
+				findTimeFormat
+				<span class='gray'>(str)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Return the timeformat in d3.timeParse function</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>str</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+			</td>
+			<td class='col-6'>string containing d3.timeParse(xxx)
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+	:
+	<span class='force-inline'>time format argument of d3.timeParse function
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapherunique'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L394-L403'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherunique'>
+			<code>
+				unique
+				<span class='gray'>(arr)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Return unique values of an array (including if there are dates)</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>arr</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>
+				
+			</td>
+			<td class='col-6'>array
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>
+	:
+	<span class='force-inline'>of unique values of 'arr'
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='graphergetoptimalprecision'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L409-L411'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#graphergetoptimalprecision'>
+			<code>
+				getOptimalPrecision
+				<span class='gray'>(maxN)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Get optimal decimal precision for number formatting</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>maxN</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+				
+			</td>
+			<td class='col-6'>maximum number in the data
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+	:
+	<span class='force-inline'>optimal format for d3.format
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapherupdatedict'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L421-L431'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherupdatedict'>
+			<code>
+				updateDict
+				<span class='gray'>(dict, newDict)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Update a nested Object</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>dict</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+				
+			</td>
+			<td class='col-6'>Object to update with values in newDict
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>newDict</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+				
+			</td>
+			<td class='col-6'>Object containing key:values to update dict with
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapherto_csv'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L576-L592'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherto_csv'>
+			<code>
+				to_csv
+				<span class='gray'>(j, header)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Transform a JSON object into a csv</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>j</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>>
+				
+			</td>
+			<td class='col-6'>Array of objects, each object should has the same number of keys (and each key is going to be a column).
+Each element of the array is going to be a line.
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>header</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+				
+				= <code>true</code>
+			</td>
+			<td class='col-6'>If true, first line of the csv fine will be a header composed of the first object keys
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>
+	:
+	<span class='force-inline'>return a csv file as a string
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+</div>
+
+	
+
+	
+	<h4 class='caps quiet mb2 mt3'>Instance Members</h4>
+	<div class="section-indent">
+  
+    <section id='graphermargin'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L229-L231'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#graphermargin'>
+			<code>
+				margin
+				<span class='gray'>(margin)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Get and sets the values of the inner margins</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>margin</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+				
+			</td>
+			<td class='col-6'></td>
+		</tr>
+		
+		
+		<tr>
+  <td class='col-2 strong'>margin.top</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+      (default <code>10</code>)
+    
+  </td>
+  <td class='col-8'>margin top
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>margin.right</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)
+    
+      (default <code>(x)=&gt;x&lt;400?20:30</code>)
+    
+  </td>
+  <td class='col-8'>margin right depends of the width of the graph
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>margin.bottom</td>
+  <td class="col-2 quiet">
+    <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+    
+  </td>
+  <td class='col-8'>margin bottom
+</td>
+</tr>
+
+
+		
+		<tr>
+  <td class='col-2 strong'>margin.left</td>
+  <td class="col-2 quiet">
+    (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)
+    
+      (default <code>(x)=&gt;x&lt;400?40:60</code>)
+    
+  </td>
+  <td class='col-8'>margin left depends of the width of the graph
+</td>
+</tr>
+
+
+		
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>
+	:
+	<span class='force-inline'>
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapheroptions'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L285-L287'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapheroptions'>
+			<code>
+				options
+				<span class='gray'>(options)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Gets and sets the option for <code>Grapher</code> object.
+Note that setter is called only by <code>typing myGraph.options = {something};</code>
+Typing myGraph.options.data = something; do work but setter is not called and data is not parsed again, etc.</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>options</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+				
+			</td>
+			<td class='col-6'>@link Grapher
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapherdraw'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L511-L557'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherdraw'>
+			<code>
+				draw
+				<span class='gray'>(options)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Draw the Grapher object</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>options</code></td>
+			<td class='col-3 quiet'>
+				(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> | null)
+				
+			</td>
+			<td class='col-6'>you can pass an options Object to update the element's option. @link Grapher
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+    <section id='grapherdownloaddata'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/ea93927db221786c9bc04cf08aa4b1e943ce80c2/grapher.js#L562-L568'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#grapherdownloaddata'>
+			<code>
+				downloadData
+				<span class='gray'>()</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Download the data associated with the Grapher element</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
+</div>
+
+	
+
+	
+
+	
+</section>
+
+				
+				
+			</div>
+		</div>
+	</div>
+</div>
+<script src='assets/scripts.min.js'></script>
 </body>
 </html>
