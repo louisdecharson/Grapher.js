@@ -291,7 +291,7 @@ class Grapher {
         // No category is specified, we derive it from y label / name
         if (! opt.category && ! this._options.category.name) {
             this._options.categories = [this._options.y.label] || [this._options.y.name];
-        } else if  (! opt.categories && (this._options.categories.length == 0 || ! opt.data || ! opt.category)) { 
+        } else if  (! opt.categories && (this._options.categories.length == 0 || opt.data || opt.category)) { 
             // When no list of categories is user-defined, we derive it from the data
             // pas de catégories déjà défini et pas de nouvelles données
             this._options.categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
