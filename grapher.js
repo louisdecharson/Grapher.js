@@ -291,10 +291,9 @@ class Grapher {
         // No category is specified, we derive it from y label / name
         if (! opt.category && ! this._options.category.name) {
             this._options.categories = [this._options.y.label] || [this._options.y.name];
-        }
-
-        // When no list of categories is user-defined, we derive it from the data
-        if (! opt.categories && this._options.categories.length == 0) {
+        } else if  (! opt.categories && (this._options.categories.length == 0 || ! opt.data || ! opt.category)) { 
+            // When no list of categories is user-defined, we derive it from the data
+            // pas de catégories déjà défini et pas de nouvelles données
             this._options.categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
         }
 
@@ -323,7 +322,6 @@ class Grapher {
         if (! this.data || opt.data || (opt.x && opt.x.parse) || (opt.y && opt.y.parse) || opt.categories) {
             this._parseData();
         }
-
         // set margins
         this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._fontSize*2 + 20 : 40)};
     }
