@@ -797,26 +797,28 @@ class Grapher {
                           .defined(d => d[this._options.y.name])
                           .x(d => this.x(d[this._options.x.name])));
             };
-            if (this._options.type == "bar") {           
-                this.g.selectAll(`rect.bar.${category.replace(/[^a-z0-9A-Z]/g,'')}`)
-                    .data(this.data.filter(d => d[this._options.category.name] === category))
-                    .join('rect')
-                    .attr('class', `bar ${category.replace(/[^a-z0-9A-Z]/g,'')}`)
-                    .attr('fill',  d => this.color(category))
-                    .attr('x', d => this.x(d[this._options.x.name]) + this.x2(category))
-                    .attr('width', this.x2.bandwidth())
-                    .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
-                    .attr('height', d => Math.abs((this.y(0) || this.y(this.y.domain()[0])) - this.y(d[this._options.y.name])))
-                    .on("mouseover", function(d) {
-	                d3.select(this).attr("fill", function() {
-                            return d3.rgb(d3.select(this).style("fill")).darker(0.5);
+            if (this._options.type == "bar") {
+                if (this.x2.bandwidth() > 0) {
+                    this.g.selectAll(`rect.bar.${category.replace(/[^a-z0-9A-Z]/g,'')}`)
+                        .data(this.data.filter(d => d[this._options.category.name] === category))
+                        .join('rect')
+                        .attr('class', `bar ${category.replace(/[^a-z0-9A-Z]/g,'')}`)
+                        .attr('fill',  d => this.color(category))
+                        .attr('x', d => this.x(d[this._options.x.name]) + this.x2(category))
+                        .attr('width', this.x2.bandwidth())
+                        .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
+                        .attr('height', d => Math.abs((this.y(0) || this.y(this.y.domain()[0])) - this.y(d[this._options.y.name])))
+                        .on("mouseover", function(d) {
+	                    d3.select(this).attr("fill", function() {
+                                return d3.rgb(d3.select(this).style("fill")).darker(0.5);
+                            });
+                        })
+                        .on("mouseout", function(d) {
+	                    d3.select(this).attr("fill", function() {
+                                return d3.rgb(d3.select(this).style("fill")).brighter(0.5);
+                            });
                         });
-                    })
-                    .on("mouseout", function(d) {
-	                d3.select(this).attr("fill", function() {
-                            return d3.rgb(d3.select(this).style("fill")).brighter(0.5);
-                        });
-                    });
+                }
             };
         };
         if (['dotted-line','dot'].indexOf(this._options.type) > -1) {
@@ -829,8 +831,54 @@ class Grapher {
                 .attr("cx", (d, i) => this.x(d[this._options.x.name]))
                 .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         };
+
+        if (this._options.type == "bar" && this.x2.bandwidth() < 1) {
+            // Create an alert
+            let alertBarZeroWidth = this.g.append("g")
+                .attr('class','alert_barzerowidth')
+                .attr('x',10)
+                .attr('y',10);
+            let textAlert = "WARNING: Graph cannot be plotted because there are too many bars to be displayed compare to the available width.",
+                textAlertA = this._splitString(textAlert,Math.floor(this.innerWidth / this._fontSize));
+            alertBarZeroWidth.selectAll("rect.alert_barzerowidth")
+                .data([null])
+                .join("rect")
+                .attr("class","alert_barzerowidth")
+                .attr("style",`fill:${this._options.style.tooltipBackgroundColor}; fill-opacity: ${this._options.style.tooltipOpacity};`);
+            alertBarZeroWidth.selectAll("text.alert_barzerowidth")
+                .data([null])
+                .join("text")
+                .call(text => text
+                      .selectAll('tspan')
+                      .data(textAlertA)
+                      .join("tspan")
+                      .attr("x", 20)
+                      .attr("y", (d, i) => `${this.innerHeight / 2 + (i-textAlertA.length/2)* 1.1 * this._fontSize}px`)
+                      .attr("class","tooltip_text")
+                      .style("font-weight","bold")
+                      .style("font-size","1em")
+                      .style("fill", "red")
+                      .text((d,i) => d));
+        }
     }
 
+    /**
+     * Split a string 's' by bits of length ~ n characters
+     * and splitting on space only. The function will split 's' by bits of minimum length 'n'
+     * on spaces inside the string.
+     * @param {string} s string to be split
+     * @param {number} n length of bits to split string 's'
+     * @param {string} [sep="|"] separator to be used to for splitting the string. The character should not be inside the string.
+     */
+    _splitString(s,n,sep="|") {
+        return s.split('').reduce(
+            (text, letter, index) => {
+                return ((text.split(sep).slice(-1)[0].length > n && letter === " ") ? text.concat(sep) : text.concat(letter)); 
+            },
+            ''
+        ).split(sep);
+    }
+    
     _buildTooltip(g, data, mouseX, mouseY) {
         if (! data) return g.style("display","none");
         g.style("display", null);
