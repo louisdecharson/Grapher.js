@@ -35,8 +35,7 @@
  * @param {Object} options.category set of options for category
  * @param {string|null} [options.category.name=null] name of the category variable in options.data
  * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
- * @param {Array<string>} [options.categories=[]] hardcode the list of elements of the 'category' variable. 
- *   Default is to take all unique values in options.data
+ * @param {Array<string>|Boolean} [options.categories=false] - Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered.
  * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
  * @param {Object} options.style list of options for styling the elements of the graph
  * @param {Array<string>} options.style.colors List of colors for the lines, bars, dots (not applicable for sparkline).
@@ -160,7 +159,7 @@ class Grapher {
                 "name": null,
                 "parse": d => d
             },
-            "categories": [],
+            "categories": false,
             "type": "line",
             "style": {
                 "colors": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
@@ -287,21 +286,22 @@ class Grapher {
     }
     set options(opt) {
         Grapher.updateDict(this._options, opt);
-        
+
         // No category is specified, we derive it from y label / name
         if (! opt.category && ! this._options.category.name) {
-            this._options.categories = [this._options.y.label] || [this._options.y.name];
-        } else if  (! opt.categories && (this._options.categories.length == 0 || opt.data || opt.category)) { 
+            this._options._categories = [this._options.y.label] || [this._options.y.name];
+        } else if ( ! this._options.categories && this._options.category.name) {
             // When no list of categories is user-defined, we derive it from the data
-            // pas de catégories déjà défini et pas de nouvelles données
-            this._options.categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
+            this._options._categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
+        } else {
+            this._options._categories = this._options.categories;
         }
-
+        
         // if user forgot to specify scaleTime while parsing a date
-        if (opt.x && ! opt.x.scale && opt.x.parse && opt.x.parse.toString().includes('d3.timeParse')) {
+        if (opt.x && ! opt.x.scale && opt.x.parse && opt.x.parse.toString().match(/(d3.timeParse|new Date)/g)) {
             this._options.x.scale = "scaleTime";
         }
-        if (opt.y && ! opt.y.scale && opt.y.parse && opt.y.parse.toString().includes('d3.timeParse')) {
+        if (opt.y && ! opt.y.scale && opt.y.parse && opt.y.parse.toString().match(/(d3.timeParse|new Date)/g)) {
             this._options.y.scale = "scaleTime";
         }
 
@@ -315,7 +315,7 @@ class Grapher {
         
         // Defines color function
         this.color = d3.scaleOrdinal()
-            .domain(this._options.categories)
+            .domain(this._options._categories)
             .range(this._options.style.colors);
 
         // Finally, parse data (if required);
@@ -639,7 +639,7 @@ class Grapher {
     addX2() {
         // Second X-axis in case of bars
         this.x2 = d3.scaleBand()
-            .domain(this._options.categories)
+            .domain(this._options._categories)
             .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
     }
 
@@ -784,7 +784,7 @@ class Grapher {
         this.g.selectAll('path.lines').remove();
         this.g.selectAll(`rect.bar`).remove();
         this.g.selectAll(`circle.dots`).remove();
-        for (const category of this._options.categories) {
+        for (const category of this._options._categories) {
             if (['line','dotted-line'].indexOf(this._options.type) > -1) {
                 this.g.append('path')
                     .datum(this.data.filter(d => d[this._options.category.name] === category))
@@ -798,10 +798,10 @@ class Grapher {
                           .x(d => this.x(d[this._options.x.name])));
             };
             if (this._options.type == "bar") {           
-                this.g.selectAll(`rect.bar.${category.replace(/ /g,'_')}`)
+                this.g.selectAll(`rect.bar.${category.replace(/[^a-z0-9A-Z]/g,'')}`)
                     .data(this.data.filter(d => d[this._options.category.name] === category))
                     .join('rect')
-                    .attr('class', `bar ${category.replace(/ /g,'_')}`)
+                    .attr('class', `bar ${category.replace(/[^a-z0-9A-Z]/g,'')}`)
                     .attr('fill',  d => this.color(category))
                     .attr('x', d => this.x(d[this._options.x.name]) + this.x2(category))
                     .attr('width', this.x2.bandwidth())
@@ -951,7 +951,7 @@ class Grapher {
             .attr("style",`fill:${this._options.legend.backgroundColor}; fill-opacity: ${this._options.legend.opacity};`);
         
         this.legendDots = this.legend.selectAll(".dots-legend")
-            .data(this._options.categories);
+            .data(this._options._categories);
         this.legendDots.exit().remove();
         this.legendDots.enter()
             .append("circle")
@@ -964,7 +964,7 @@ class Grapher {
 
         // Add one dot in the legend for each name.
         this.legendLabels = this.legend.selectAll(".labels-legend")
-            .data(this._options.categories);
+            .data(this._options._categories);
         this.legendLabels.exit().remove();
         this.legendLabels.enter()
             .append("text")
@@ -992,8 +992,8 @@ class Grapher {
         }
         this.legendBackground.attr('x', this._options.legend.x-5)
             .attr('y',this._options.legend.y-10)
-            .attr('width', (w > 0 ? w + 20 : d3.max(this._options.categories.map(d => d.length))*10 + 10)) // if graph is not displayed the width and height will be zero (*)
-            .attr('height',(h > 0 ?  h + 10 : this._options.categories.length * this._options.legend.interstice + 10));
+            .attr('width', (w > 0 ? w + 20 : d3.max(this._options._categories.map(d => d.length))*10 + 10)) // if graph is not displayed the width and height will be zero (*)
+            .attr('height',(h > 0 ?  h + 10 : this._options._categories.length * this._options.legend.interstice + 10));
         // (*) we try to estimate the width and height based on max
         //     nb of characthers of the legend text and nb of keys
         
