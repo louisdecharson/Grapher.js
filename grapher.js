@@ -112,13 +112,7 @@ class Grapher {
         // Add a container for the graph
         this.container = d3.select(`#${this.id}`)
             .append('span')
-            .attr('class','grapherContainer');
-
-        // Add svg
-        this.svg = this.container
-            .append("svg")
-            .attr("id", this.id + '_svg')
-            .attr('class','grapher')
+            .attr('class','grapherContainer')
             .attr("width", this.width)
             .attr("height", this.height);
 
@@ -129,6 +123,17 @@ class Grapher {
         } else {
             this.isSparkline = false;
         }
+
+        this.svgWidth = this.width;
+        this.svgHeight = this.height;
+        
+        // Add svg
+        this.svg = this.container
+            .append("svg")
+            .attr("id", this.id + '_svg')
+            .attr('class','grapher')
+            .attr("width", this.svgWidth)
+            .attr("height", this.svgHeight);
 
         // Create margins
         this._margin = {};
@@ -236,17 +241,17 @@ class Grapher {
             this._margin = {"top": 0, "right": 0, "bottom": 0, "left": 0};
         } else {
             this._margin = {"top": top,
-                            "right": typeof right == "function" ? right(this.width) : right,
+                            "right": typeof right == "function" ? right(this.svgWidth) : right,
                             "bottom": bottom || this._fontSize*2 + 20,
-                            "left": typeof left == "function" ? left(this.width) : left};
+                            "left": typeof left == "function" ? left(this.svgWidth) : left};
         }
         this._innerDimensions();
     }
 
     // Setting inner dimension (without axes)
     _innerDimensions() {
-        this.innerWidth = this.width - this._margin.left - this._margin.right;
-        this.innerHeight = this.height - this._margin.top - this._margin.bottom;
+        this.innerWidth = this.svgWidth - this._margin.left - this._margin.right;
+        this.innerHeight = this.svgHeight - this._margin.top - this._margin.bottom;
 
         this._createSVG();
     };
@@ -427,20 +432,43 @@ class Grapher {
             }
         }
     }
+
+    /**
+     * 
+     *
+     */
+    static getDimensionText(text, fontSize) {
+        let element = document.createElement('div');
+        element.style.cssText = `position:absolute;visibility:hidden;width:auto;height:auto;white-space:nowrap;font-size:${fontSize}`;
+        element.setAttribute('id','element_compute_dim');
+        document.body.appendChild(element);
+        element = document.getElementById('element_compute_dim');
+        element.innerHTML = text;
+        let width = element.clientWidth,
+            height = element.clientHeight;
+        element.remove();
+        return {width: width, height: height};
+        
+    }
+    
     
     // Drawing methods
     // ===============
     sparkline() {
-        
+
+        // First compute the width taken by text for label and 
+        this.sparkTextwidth = 0;
+        this.lastPoint = this.data.slice(-1)[0];
+
         // Define X-axis
         this.x = d3.scaleLinear()
-            .range([0, this.width-2])
+            .range([0, this.svgWidth-2])
             .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
         this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
         
         // Define y-axis
         this.y = d3.scaleLinear()
-            .range([this.height-4, 0])
+            .range([this.svgHeight-4, 0])
             .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale));
         
         // Remove existing
@@ -478,7 +506,6 @@ class Grapher {
                   .y(d => this.y(d[this._options.y.name])));
 
         // Add point and circle
-        this.lastPoint = this.data.slice(-1)[0];
         this.sparkCircle = this.g.append('circle')
             .attr('class','sparkCircle')
             .attr('cx', this.x(this.lastPoint[this._options.x.name]))
@@ -486,20 +513,27 @@ class Grapher {
             .attr('r', 1.5)
             .attr('fill', this._options.sparkline.circleColor)
             .attr('stroke', 'none');
+
+        
+        // Text for last point and label
+        this.container.selectAll('.sparkText').remove();
+        this.sparkTextwidth = 0;
         if (this._options.sparkline.textLastPoint) {
-            this.sparkText = d3.select(`#${this.id}`)
+            this.sparkTextLastPoint = this.container
                 .append('span')
                 .attr('class','sparkText')
                 .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
-                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this._options.sparkline.textColor}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block;`);
+                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this._options.sparkline.textColor}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block;`);
+            this.sparkTextwidth += this.sparkTextLastPoint.node().getBoundingClientRect().width;
         }
         if (this._options.y.label) {
-            this.sparkText = d3.select(`#${this.id}`)
+            this.sparkTextYLabel = this.container
                 .append('span')
                 .attr('class','sparkText')
                 .text(this._options.y.label)
-                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.height/2} vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
-        }        
+                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
+            this.sparkTextwidth += this.sparkTextYLabel.node().getBoundingClientRect().width;
+        }       
     }
 
     /**
@@ -597,7 +631,7 @@ class Grapher {
         this.xNbValues = this.xValues.length;
         this.xWidth = this.innerWidth / this.xNbValues;
         this.xRange = this._options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
-        this.xNbTicks = d3.min([parseInt((this.width - 100) / 100), this.xNbValues]);
+        this.xNbTicks = d3.min([parseInt((this.svgWidth - 100) / 100), this.xNbValues]);
         this.x = d3[this._options.x.scale]()
             .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
             .range(this.xRange);
@@ -631,7 +665,7 @@ class Grapher {
     addXLabel() {
         this.g.append("text")
             .attr("class","xLabel axisLabel")
-            .attr("transform", `translate(${this.innerWidth/2},${this.height-this._margin.bottom/2})`)
+            .attr("transform", `translate(${this.innerWidth/2},${this.svgHeight-this._margin.bottom/2})`)
             .style("text-anchor","middle")
             .text(this._options.x.label);
     };
@@ -947,6 +981,7 @@ class Grapher {
         const {xx, yy, width: w, height: h} = text.node().getBBox();
 
         // Make sure the tooltip is always in the graph area (and visible)
+        // console.log(h, mouseY, h + mouseY - 20, this.innerHeight, h + mouseY - 20 > this.innerHeight, mouseY - h, this.svgHeight, this.innerHeight);
         let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
             text_y = h + mouseY - 20 > this.innerHeight ? mouseY - h : mouseY;
         text.attr("transform", `translate(${text_x},${text_y})`);
