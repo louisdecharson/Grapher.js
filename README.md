@@ -4,11 +4,11 @@ Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, 
 
 #### Table of Contents
 
-- [Installation](#installation)
-- [Example](#example)
-- [Documentation](#documentation)
-- [See also](#seealso) 
-- [Credits](#credits)
+-   [Installation](#installation)
+-   [Example](#example)
+-   [Documentation](#documentation)
+-   [See also](#seealso) 
+-   [Credits](#credits)
 
 ## Installation
 
@@ -86,17 +86,27 @@ Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, 
         -   [Parameters](#parameters-2)
     -   [draw](#draw)
         -   [Parameters](#parameters-3)
+    -   [downloadData](#downloaddata)
     -   [findTimeFormat](#findtimeformat)
         -   [Parameters](#parameters-4)
     -   [unique](#unique)
         -   [Parameters](#parameters-5)
-    -   [downloadData](#downloaddata)
+    -   [getOptimalPrecision](#getoptimalprecision)
+        -   [Parameters](#parameters-6)
+    -   [updateDict](#updatedict)
+        -   [Parameters](#parameters-7)
+    -   [getDimensionText](#getdimensiontext)
+        -   [Parameters](#parameters-8)
+    -   [to_csv](#to_csv)
+        -   [Parameters](#parameters-9)
+    -   [splitString](#splitstring)
+        -   [Parameters](#parameters-10)
 
 ### Grapher
 
 The `Grapher` object represents the graph.
 
-You cerate a `Grapher` by specifying a `container` (a DOM element)
+You create a `Grapher` by specifying a `container` (a DOM element)
  that will contain the graph, and other options.
 
 #### Parameters
@@ -106,12 +116,13 @@ You cerate a `Grapher` by specifying a `container` (a DOM element)
     -   `options.data` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)>** Array of JSON containing the data (optional, default `[]`)
     -   `options.x` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Set of options for the x axis
         -   `options.x.name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Name of the x-axis variable in options.data (optional, default `x`)
-        -   `options.x.scale` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** d3-scale (<https://github.com/d3/d3-scale>) (optional, default `"scaleLinear"`)
+        -   `options.x.scale` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** d3-scale, see [d3-scale on Github](https://github.com/d3/d3-scale) (optional, default `"scaleLinear"`)
         -   `options.x.parse` **([function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function) | null)** Function to parse the data (useful if x-axis is a date) (optional, default `null`)
         -   `options.x.tickFormat` **([function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function) | null)** Function to format the variable when displayed as tick or in tooltip (optional, default `null`)
         -   `options.x.label` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | null)** Label for x-axis (optional, default `null`)
         -   `options.x.domain` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)> | null)** Hardcode the x-axis bound. 
             Default is to use min and max of x values in options.data (optional, default `null`)
+        -   `options.x.nice` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see [d3-scale on Github](https://github.com/d3/d3-scale#continuous_nice) (optional, default `true`)
     -   `options.y` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Set of options for the y axis
         -   `options.y.name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the y-axis variable in options.data (optional, default `x`)
         -   `options.y.scale` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** d3-scale, see [d3-scale on Github](https://github.com/d3/d3-scale) (optional, default `"scaleLinear"`)
@@ -119,25 +130,31 @@ You cerate a `Grapher` by specifying a `container` (a DOM element)
         -   `options.y.tickFormat` **([function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function) | null)** function to format the variable when displayed as tick or in tooltip (optional, default `null`)
         -   `options.y.label` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | null)** label for y-axis (optional, default `null`)
         -   `options.y.domain` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)> | null)** Hardcode the y-axis bound. Default is to use min and max of y values in options.data (optional, default `null`)
+        -   `options.y.nice` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see [d3-scale on Github](https://github.com/d3/d3-scale#continuous_nice) (optional, default `true`)
     -   `options.category` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** set of options for category
         -   `options.category.name` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | null)** name of the category variable in options.data (optional, default `null`)
         -   `options.category.parse` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** function to parse (or format) the category variable when displayed in tooltip (optional, default `(d=>d)`)
-    -   `options.categories` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** hardcode the list of elements of the 'category' variable. 
-          Default is to take all unique values in options.data (optional, default `[]`)
+    -   `options.categories` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)> | [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))** Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered. (optional, default `false`)
     -   `options.type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline" (optional, default `"line"`)
     -   `options.style` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** list of options for styling the elements of the graph
-        -   `options.style.colors` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>?** List of colors for the lines, bars, dots (not applicable for sparkline).
+        -   `options.style.colors` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** List of colors for the lines, bars, dots (not applicable for sparkline).
                Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
         -   `options.style.barWidth` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars. (optional, default `0.8`)
         -   `options.style.strokeWidth` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** stroke-width of the line. Default is 3px (optional, default `3`)
         -   `options.style.dotSize` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** dot-size of the dots. Default is 4px (optional, default `4`)
-        -   `options.style.grid` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to display the y-axis grid (optional, default `true`)
         -   `options.style.tooltipColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Text color in the tooltip (optional, default `"#181818"`)
         -   `options.style.tooltipBackgroundColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Background color of the tooltip (optional, default `"#ffffff"`)
         -   `options.style.tooltipOpacity` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Opacity of the tooltip. Default is 0.8 (80%) (optional, default `"0.8"`)
-    -   `options.tooltipLineColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Color of the vertical line color (optional, default `"#000000"`)
+        -   `options.style.tooltipLineColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Color of the vertical line color (optional, default `"#000000"`)
+    -   `options.grid` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for the grid
+        -   `options.grid.x` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for grid on the x-axis
+            -   `options.grid.x.show` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** if true, grid will be added (same frequency as ticks) (optional, default `false`)
+            -   `options.grid.x.lines` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;{x: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), label: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), position: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), y: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), textAnchor: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), class: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}>** Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'. (optional, default `[]`)
+        -   `options.grid.y` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for grid on the y-axis
+            -   `options.grid.y.show` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** if true, grid will be added (same frequency as ticks) (optional, default `true`)
+            -   `options.grid.y.lines` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;{y: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), label: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), position: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), x: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), textAnchor: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), class: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}>** Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'. (optional, default `[]`)
     -   `options.legend` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for the legend
-        -   `options.legend.hide` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** hide legend (optional, default `false`)
+        -   `options.legend.show` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** show legend. If false, legend will not be displayed. (optional, default `true`)
         -   `options.legend.x` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** legend's x position in the svg (optional, default `15`)
         -   `options.legend.y` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** legend's y position in the svg. Default value equals the margin-top of the g element inside the svg.
         -   `options.legend.interstice` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** space in px between the legend items (optional, default `25`)
@@ -156,6 +173,9 @@ You cerate a `Grapher` by specifying a `container` (a DOM element)
         -   `options.sparkline.textFontSize` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text's font size (optional, default `"85%"`)
         -   `options.sparkline.textFontWeight` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text's font weight (optional, default `"600"`)
         -   `options.sparkline.rangeFillColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** range's band fill color (optional, default `"#ccc"`)
+        -   `options.sparkline.rangeFillColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** range's band fill color (optional, default `"#ccc"`)
+    -   `options.advanced` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Advanced options
+        -   `options.advanced.additionalColumnsInData` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** Grapher will only keep x, y and category when parsing the data. Passing columns names here will preserve them in the data. (optional, default `[]`)
 -   `width` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** width of the DOM element (if not already setup in HTML or CSS) (optional, default `null`)
 -   `height` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** height of the DOM element (if not already setup in HTML or CSS) (optional, default `null`)
 
@@ -196,7 +216,9 @@ Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/G
 
 #### options
 
-Gets and sets the option for `Grapher` object.
+Gets and sets the option for `Grapher` object. 
+Note that setter is called only by `typing myGraph.options = {something};` 
+Typing myGraph.options.data = something; do work but setter is not called and data is not parsed again, etc.
 
 ##### Parameters
 
@@ -209,6 +231,10 @@ Draw the Grapher object
 ##### Parameters
 
 -   `options` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | null)** you can pass an options Object to update the element's option. @link Grapher
+
+#### downloadData
+
+Download the data associated with the Grapher element
 
 #### findTimeFormat
 
@@ -230,9 +256,61 @@ Return unique values of an array (including if there are dates)
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** of unique values of 'arr'
 
-#### downloadData
+#### getOptimalPrecision
 
-Download the data associated with the Grapher element
+Get optimal decimal precision for number formatting
+
+##### Parameters
+
+-   `maxN` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** maximum number in the data
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** optimal format for d3.format
+
+#### updateDict
+
+Update a nested Object
+
+##### Parameters
+
+-   `dict` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Object to update with values in newDict
+-   `newDict` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Object containing key:values to update dict with
+
+#### getDimensionText
+
+Retrieve the width and height of some text based on its font
+
+##### Parameters
+
+-   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text to be measured
+-   `fontSize` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** fontSize of the text
+
+Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Object with width and height of the text as if it was on the DOM
+
+#### to_csv
+
+Transform a JSON object into a csv
+
+##### Parameters
+
+-   `j` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)>** Array of objects, each object should has the same number of keys (and each key is going to be a column). 
+      Each element of the array is going to be a line.
+-   `header` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** If true, first line of the csv fine will be a header composed of the first object keys (optional, default `true`)
+
+Returns **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** return a csv file as a string
+
+#### splitString
+
+Split a string in substrings of length of approx. n characters
+and splitting on space only. The function will split the string in substring of minimum length 'n'
+on spaces inside the string.
+
+##### Parameters
+
+-   `s` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** string to be split
+-   `n` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** length of bits to split string 's'
+-   `sep` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** separator to be used to for splitting the string. The character should not be inside the string. (optional, default `"|"`)
+
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array of substrings
 
 ## See also
 

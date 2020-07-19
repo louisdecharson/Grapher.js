@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset='utf-8' />
-	<title>Grapher 0.0.3 | Documentation</title>
+	<title>Grapher 0.0.4 | Documentation</title>
 	<meta name='description' content='A minimal wrapper around D3.js to do line and bar plots.'>
 	<meta name='viewport' content='width=device-width,initial-scale=1'>
 	<link href='assets/styles.min.css' rel='stylesheet' />
@@ -15,7 +15,7 @@
 			<div class='font-smaller fixed col-3 top-0 bottom-0 left-0 overflow-auto fill-light dark-link'>
 				<div class='px2'>
 					<h3 class='mb0 no-anchor'><code>Grapher</code></h3>
-					<div class='mb1'><code>0.0.3</code></div>
+					<div class='mb1'><code>0.0.4</code></div>
 					<input placeholder='Filter' id='filter-input' class='col12 block input' type='text' />
 					<div id="toc">
 						
@@ -57,9 +57,21 @@
 							</a>
 							
 							<a
+									href='#graphergetdimensiontext'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.getDimensionText</code>
+							</a>
+							
+							<a
 									href='#grapherto_csv'
 									class='button-indent px1 quiet regular rounded block'>
 								<code>.to_csv</code>
+							</a>
+							
+							<a
+									href='#graphersplitstring'
+									class='button-indent px1 quiet regular rounded block'>
+								<code>.splitString</code>
 							</a>
 							
 							
@@ -113,7 +125,7 @@
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L100-L1001'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L100-L1104'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1081,7 +1093,7 @@ band displayed in the sparkline. If null, not the band is not displayed.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L379-L385'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L384-L390'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1162,7 +1174,7 @@ band displayed in the sparkline. If null, not the band is not displayed.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L392-L401'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L397-L406'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1243,7 +1255,7 @@ band displayed in the sparkline. If null, not the band is not displayed.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L407-L409'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L412-L414'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1324,7 +1336,7 @@ band displayed in the sparkline. If null, not the band is not displayed.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L419-L429'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L424-L434'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1401,13 +1413,105 @@ band displayed in the sparkline. If null, not the band is not displayed.
 </section>
 
   
+    <section id='graphergetdimensiontext'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L442-L454'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#graphergetdimensiontext'>
+			<code>
+				getDimensionText
+				<span class='gray'>(text, fontSize)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Retrieve the width and height of some text based on its font</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>text</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+			</td>
+			<td class='col-6'>text to be measured
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>fontSize</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+			</td>
+			<td class='col-6'>fontSize of the text
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>
+	:
+	<span class='force-inline'>Object with width and height of the text as if it was on the DOM
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
     <section id='grapherto_csv'class='mt2 mb2 px3 py1 keyline-top'>
 
 	<div class='right py2'>
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L574-L590'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L463-L479'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1495,6 +1599,112 @@ Each element of the array is going to be a line.
 </section>
 
   
+    <section id='graphersplitstring'class='mt2 mb2 px3 py1 keyline-top'>
+
+	<div class='right py2'>
+		
+		
+		<span class="px2"></span>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L489-L496'>
+			<span>grapher.js</span>
+		</a>
+		
+	</div>
+
+	<h3 class='regular'>
+		<a class='black' href='#graphersplitstring'>
+			<code>
+				splitString
+				<span class='gray'>(s, n, sep)</span>
+			</code>
+		</a>
+	</h3>
+
+	<p>Split a string in substrings of length of approx. n characters
+and splitting on space only. The function will split the string in substring of minimum length 'n'
+on spaces inside the string.</p>
+
+	
+
+	
+	
+	
+	
+	
+	
+
+	
+	<table class='table-light mt3 rounded keyline-all keyline-light overflow-hidden bg-cloudy-light'>
+		<thead class='fill-light'>
+		<th class='col-3 small caps quiet'>parameter</th>
+		<th class='col-3 small caps quiet'>type</th>
+		<th class='col-6 small caps quiet'>description</th>
+		</thead>
+		
+		<tr>
+			<td class='col-3 strong'><code>s</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+			</td>
+			<td class='col-6'>string to be split
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>n</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+				
+			</td>
+			<td class='col-6'>length of bits to split string 's'
+</td>
+		</tr>
+		
+		
+		<tr>
+			<td class='col-3 strong'><code>sep</code></td>
+			<td class='col-3 quiet'>
+				<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+				
+				= <code>&quot;|&quot;</code>
+			</td>
+			<td class='col-6'>separator to be used to for splitting the string. The character should not be inside the string.
+</td>
+		</tr>
+		
+		
+	</table>
+	
+
+	
+
+	
+	
+	<h4 class='caps quiet mb1 mt3'>Returns</h4>
+	<code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>
+	:
+	<span class='force-inline'>array of substrings
+</span>
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+</section>
+
+  
 </div>
 
 	
@@ -1509,7 +1719,7 @@ Each element of the array is going to be a line.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L228-L230'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L233-L235'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1645,7 +1855,7 @@ Each element of the array is going to be a line.
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L284-L286'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L289-L291'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1719,7 +1929,7 @@ Typing myGraph.options.data = something; do work but setter is not called and da
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L509-L555'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L505-L553'>
 			<span>grapher.js</span>
 		</a>
 		
@@ -1791,7 +2001,7 @@ Typing myGraph.options.data = something; do work but setter is not called and da
 		
 		
 		<span class="px2"></span>
-		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/4fa56d87cdb2edbc6f7fafca53c36595dca9e4dc/grapher.js#L560-L566'>
+		<a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/louisdecharson/Grapher/blob/1316b10f50830f90c166665d7c40565188837641/grapher.js#L558-L564'>
 			<span>grapher.js</span>
 		</a>
 		
