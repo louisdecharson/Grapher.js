@@ -39,7 +39,7 @@
  * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
  * @param {Object} options.style list of options for styling the elements of the graph
  * @param {Array<string>} options.style.colors List of colors for the lines, bars, dots (not applicable for sparkline).
-*    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
+ *    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
  * @param {number} [options.style.barWidth=0.8] Share of the x axis width that should be filled with bars. Setting to 0.8, lets 20% in space between bars.
  * @param {number} [options.style.strokeWidth=3] - stroke-width of the line. Default is 3px
  * @param {number} [options.style.dotSize=4] - dot-size of the dots. Default is 4px 
@@ -434,8 +434,10 @@ class Grapher {
     }
 
     /**
-     * 
-     *
+     * Retrieve the width and height of some text based on its font
+     * @param {string} text - text to be measured
+     * @param {string} fontSize - fontSize of the text
+     * @returns {Object} - Object with width and height of the text as if it was on the DOM
      */
     static getDimensionText(text, fontSize) {
         let element = document.createElement('div');
@@ -451,10 +453,119 @@ class Grapher {
         
     }
     
+    /** 
+     * Transform a JSON object into a csv
+     * @param {Array<Object>} j - Array of objects, each object should has the same number of keys (and each key is going to be a column). 
+     *   Each element of the array is going to be a line.
+     * @param {Boolean} [header=true] - If true, first line of the csv fine will be a header composed of the first object keys
+     * @returns {String} - return a csv file as a string
+     */
+    static to_csv(j,header=true) {
+        let csv = '';
+        if (j.length > 0) {
+            let keys = Object.keys(j[0]);
+            if (header) {
+                csv += keys.join(',') + "\n";
+            }
+            csv += j.map(function(d) {
+                let a = [];
+                for (const k of keys) {
+                    a.push('"' + d[k] + '"');
+                }
+                return a.join(',');
+            }).join('\n');
+        }
+        return csv.toString();
+    }
+    /**
+     * Split a string in substrings of length of approx. n characters
+     * and splitting on space only. The function will split the string in substring of minimum length 'n'
+     * on spaces inside the string.
+     * @param {string} s string to be split
+     * @param {number} n length of bits to split string 's'
+     * @param {string} [sep="|"] separator to be used to for splitting the string. The character should not be inside the string.
+     * @returns {Array} array of substrings
+     */
+    static splitString(s,n,sep="|") {
+        return s.split('').reduce(
+            (text, letter, index) => {
+                return ((text.split(sep).slice(-1)[0].length > n && letter === " ") ? text.concat(sep) : text.concat(letter)); 
+            },
+            ''
+        ).split(sep);
+    }
+    
     
     // Drawing methods
     // ===============
-    sparkline() {
+    /**
+     * Draw the Grapher object
+     * @param {Object|null} options - you can pass an options Object to update the element's option. @link Grapher
+     */
+    draw(options) {
+        if (options) {
+            this.options = options;
+        }
+
+        // Adjust width of svg
+        this._svgSetWidth();
+            
+        // Clean
+        this.g.selectAll('g.x.axis').remove();
+        this.g.selectAll('g.y.axis').remove();
+        this.g.selectAll('g.yGrid').remove();
+        
+        // Add axis & grid
+        if (this._options.type == "sparkline") {
+            this._sparkline();
+            this._addTooltip();
+        } else {
+            this._addX();
+            if (this._options.type == "bar") {
+                this._addX2();
+            }
+            if (this._options.x.label) {
+                this._addXLabel();
+            }
+            this._addY();
+            if (this._options.y.label) {
+                this._addYLabel();
+            }
+
+            if (this._options.grid.y.lines.length > 0) {
+                this._addYGridLines();
+            }
+            if (this._options.grid.x.lines.length > 0) {
+                this._addXGridLines();
+            }
+            
+            // Add content      
+            this._draw();
+
+            
+            // Add tooltip & legend
+            this._addTooltip();
+            if (this._options.legend.show) {
+                this._addLegend();
+            }
+            
+        }
+    }
+    /** 
+     * Download the data associated with the Grapher element
+     *
+     */
+    downloadData() {
+        let domEl = document.createElement('a');
+        domEl.id = "download";
+        domEl.download = this._options.download.filename;
+        domEl.href = URL.createObjectURL(new Blob([Grapher.to_csv(this.data)]));
+        domEl.click();
+    };
+
+    // Graph internal methods
+    // =======================
+    _sparkline() {
 
         // First compute the width taken by text for label and 
         this.sparkTextwidth = 0;
@@ -517,7 +628,6 @@ class Grapher {
         
         // Text for last point and label
         this.container.selectAll('.sparkText').remove();
-        this.sparkTextwidth = 0;
         if (this._options.sparkline.textLastPoint) {
             this.sparkTextLastPoint = this.container
                 .append('span')
@@ -532,100 +642,9 @@ class Grapher {
                 .attr('class','sparkText')
                 .text(this._options.y.label)
                 .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
-            this.sparkTextwidth += this.sparkTextYLabel.node().getBoundingClientRect().width;
         }       
     }
-
-    /**
-     * Draw the Grapher object
-     * @param {Object|null} options - you can pass an options Object to update the element's option. @link Grapher
-     */
-    draw(options) {
-        if (options) {
-            this.options = options;
-        }
-        
-        // Clean
-        this.g.selectAll('g.x.axis').remove();
-        this.g.selectAll('g.y.axis').remove();
-        this.g.selectAll('g.yGrid').remove();
-
-        
-        // Add axis & grid
-        if (this._options.type == "sparkline") {
-            this.sparkline();
-            this.addTooltip();
-        } else {
-            this.addX();
-            if (this._options.type == "bar") {
-                this.addX2();
-            }
-            if (this._options.x.label) {
-                this.addXLabel();
-            }
-            this.addY();
-            if (this._options.y.label) {
-                this.addYLabel();
-            }
-
-            if (this._options.grid.y.lines.length > 0) {
-                this.addYGridLines();
-            }
-            if (this._options.grid.x.lines.length > 0) {
-                this.addXGridLines();
-            }
-            
-            // Add content      
-            this._draw();
-
-            
-            // Add tooltip & legend
-            this.addTooltip();
-            if (this._options.legend.show) {
-                this.addLegend();
-            }
-            
-        }
-    }
-    /** 
-     * Download the data associated with the Grapher element
-     *
-     */
-    downloadData() {
-        let domEl = document.createElement('a');
-        domEl.id = "download";
-        domEl.download = this._options.download.filename;
-        domEl.href = URL.createObjectURL(new Blob([Grapher.to_csv(this.data)]));
-        domEl.click();
-    };
-    /** 
-     * Transform a JSON object into a csv
-     * @param {Array<Object>} j - Array of objects, each object should has the same number of keys (and each key is going to be a column). 
-     *   Each element of the array is going to be a line.
-     * @param {Boolean} [header=true] - If true, first line of the csv fine will be a header composed of the first object keys
-     * @returns {String} - return a csv file as a string
-     */
-    static to_csv(j,header=true) {
-        let csv = '';
-        if (j.length > 0) {
-            let keys = Object.keys(j[0]);
-            if (header) {
-                csv += keys.join(',') + "\n";
-            }
-            csv += j.map(function(d) {
-                let a = [];
-                for (const k of keys) {
-                    a.push('"' + d[k] + '"');
-                }
-                return a.join(',');
-            }).join('\n');
-        }
-        return csv.toString();
-    }
-
-    // Graph internal methods
-    // =======================
-    addX() {
+    _addX() {
         // (i) Find the width
         this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
         this.xNbValues = this.xValues.length;
@@ -659,10 +678,10 @@ class Grapher {
                 .attr('x2', this.innerWidth);
         }
         if (this._options.grid.x.show) {
-            this.addXGrid();
+            this._addXGrid();
         }
     }
-    addXLabel() {
+    _addXLabel() {
         this.g.append("text")
             .attr("class","xLabel axisLabel")
             .attr("transform", `translate(${this.innerWidth/2},${this.svgHeight-this._margin.bottom/2})`)
@@ -670,14 +689,14 @@ class Grapher {
             .text(this._options.x.label);
     };
 
-    addX2() {
+    _addX2() {
         // Second X-axis in case of bars
         this.x2 = d3.scaleBand()
             .domain(this._options._categories)
             .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
     }
 
-    addY() {
+    _addY() {
         this.yVar = this._options.y.name;
         
         // Define Y Axis
@@ -696,7 +715,7 @@ class Grapher {
                   .tickFormat(this._options.y.tickFormat));
         // Define Y grid
         if (this._options.grid.y.show) {
-            this.addYGrid();
+            this._addYGrid();
         }
         // Add horizontal line at X = 0
         if (this.y.domain()[0] < 0 && this._options.type == "bar") {
@@ -709,7 +728,7 @@ class Grapher {
                 .attr('x2', this.innerWidth);
         }
     }
-    addYGrid() {
+    _addYGrid() {
         // Find best number of ticks
         this.yNbTicks = this._options.y.scale == "scaleLog" ? Math.round(Math.log10(this.y.domain()[1]) - Math.log10(this.y.domain()[0])): parseInt(this.innerHeight / 40);
         
@@ -733,7 +752,7 @@ class Grapher {
             .attr('class','yGrid')
             .call(this.yGrid);
     }
-    addXGrid() {
+    _addXGrid() {
         // Define X grid
         this.xGrid = svg => svg
             .call(d3.axisBottom(this.x)
@@ -754,7 +773,7 @@ class Grapher {
             .attr('class','xGrid')
             .call(this.xGrid);
     }
-    addYGridLines() {
+    _addYGridLines() {
         for (const line of this._options.grid.y.lines) {
             this.g.append("g")
                 .attr("class",`y grid-line ${line.class || ""}`)
@@ -778,7 +797,7 @@ class Grapher {
             }
         }
     }
-    addXGridLines() {
+    _addXGridLines() {
         for (const line of this._options.grid.x.lines) {
             this.g.append("g")
                 .attr("class",`x grid-line ${line.class || ""}`)
@@ -803,7 +822,7 @@ class Grapher {
             }
         }
     }
-    addYLabel() {
+    _addYLabel() {
         // Add Title for X axis
         this.g.append("text")
             .attr("transform", "rotate(-90)")
@@ -873,7 +892,7 @@ class Grapher {
                 .attr('x',10)
                 .attr('y',10);
             let textAlert = "WARNING: Graph cannot be plotted because there are too many bars to be displayed compare to the available width.",
-                textAlertA = this._splitString(textAlert,Math.floor(this.innerWidth / this._fontSize));
+                textAlertA = Grapher.splitString(textAlert,Math.floor(this.innerWidth / this._fontSize));
             alertBarZeroWidth.selectAll("rect.alert_barzerowidth")
                 .data([null])
                 .join("rect")
@@ -895,24 +914,6 @@ class Grapher {
                       .text((d,i) => d));
         }
     }
-
-    /**
-     * Split a string 's' by bits of length ~ n characters
-     * and splitting on space only. The function will split 's' by bits of minimum length 'n'
-     * on spaces inside the string.
-     * @param {string} s string to be split
-     * @param {number} n length of bits to split string 's'
-     * @param {string} [sep="|"] separator to be used to for splitting the string. The character should not be inside the string.
-     */
-    _splitString(s,n,sep="|") {
-        return s.split('').reduce(
-            (text, letter, index) => {
-                return ((text.split(sep).slice(-1)[0].length > n && letter === " ") ? text.concat(sep) : text.concat(letter)); 
-            },
-            ''
-        ).split(sep);
-    }
-    
     _buildTooltip(g, data, mouseX, mouseY) {
         if (! data) return g.style("display","none");
         g.style("display", null);
@@ -1009,7 +1010,7 @@ class Grapher {
         return [mouseXValue].concat(mouseYValues);
     }
 
-    addTooltip() {
+    _addTooltip() {
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
         let that = this;
@@ -1024,7 +1025,7 @@ class Grapher {
         this.g.on("touchend mouseleave", () => {this.tooltip.call(this._buildTooltip, null);});
     }
 
-    addLegend() {
+    _addLegend() {
         this.g.selectAll('.legend').remove();
         this.legend = this.g.append('g').attr('class','legend');
         this.legendBackground = this.legend.selectAll('rect')
@@ -1080,5 +1081,24 @@ class Grapher {
         // (*) we try to estimate the width and height based on max
         //     nb of characthers of the legend text and nb of keys
         
+    }
+    _svgSetWidth() {
+        // this method is used to adjust svg width in case of sparkline
+        // to make sure the label and last value are set inside
+        // the container
+        if (this.isSparkline) {
+            this.sparkTextWidth = 0;
+            if (this._options.sparkline.textLastPoint) {
+                this.lastPoint = this.data.slice(-1)[0];
+                let textLastPoint = this._options.y.tickFormat(this.lastPoint);
+                this.sparkTextWidth += Grapher.getDimensionText(textLastPoint,this._options.sparkline.textFontSize).width;
+            }
+            if (this._options.y.label) {
+                this.sparkTextWidth += Grapher.getDimensionText(this._options.y.label,this._options.sparkline.textFontSize).width + 16*0.4;
+            }
+            // Adjust svg width
+            this.svgWidth = this.width - this.sparkTextWidth;
+            this.svg.attr('width', this.svgWidth);
+        }
     }
 }
