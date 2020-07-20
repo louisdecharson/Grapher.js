@@ -372,7 +372,14 @@ class Grapher {
             }
         }
     }
-    
+
+    // Static Properties
+    // =================
+    // Static properties are not yet supported by all internet browsers
+    // using static methods insteady
+    static version() {
+        return '0.0.5';
+    }
 
     // Static Methods
     // =============
@@ -494,6 +501,57 @@ class Grapher {
             ''
         ).split(sep);
     }
+
+    /**
+     * Transform a 'wide' array of Dict to 'long' array, pivoting on some
+     * 'pivot' columns (keys). The long format is a {id, key, value},
+     * where id is one or multiple 'pivot' columns, 'key' are the non pivot columns
+     * of the original array and the value are the value of the corresponding keys.
+     * A category value can also be passed as a new 'column'. 
+     * The long format becomes {id, key, value, category}.
+     * A mapping function can also be passed to be applied to each long element 
+     * (for instance to parse a date)
+     * @param {Array} wideData data to pivot
+     * @param {Array} pivotColumns list of keys on which to pivot from wide to long
+     * @param {string} [keyName="field_id"] name of the key for variable name in the long format. 
+     * @param {string} [valueName="field_value"] name of the key for value in the long format
+     * @param {?string} [category="undefined"] optional category key to be added in the long data 
+     * @param {function(Dict)} mapLongElement optional function to be applied on each long element
+     * @example
+     * wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
+     *              {'date':'2020-07-20','temperature':25,'pressure':1020}];
+     * longArray = wideToLong(wideArray, ['date']);
+     * longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
+     *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1016}
+     *              {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
+     *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}] 
+     */
+    static wideToLong(wideData,
+                      pivotColumns,
+                      keyName='field_id',
+                      valueName='field_value',
+                      category=undefined,
+                      mapLongElement=undefined
+                     ) {
+        let longData = [],
+            columns = Object.keys(wide_data[0]),
+            wideColumns = columns.filter( x => !pivotColumns.includes(x));
+        for (const element of wideData) {
+            for (const col of wideColumns) {
+                let longElement = {};
+                longElement[keyName] = col;
+                longElement[valueName] = element[col];
+            }
+            if (category != undefined) {
+                longElement['category'] = category;
+            }
+            if (mapLongElement != undefined) {
+                longElement = mapLongElement(longElement);
+            }
+            longData.push(longElement);
+        }
+        return longData;
+    }
     
     
     // Drawing methods
@@ -566,11 +624,6 @@ class Grapher {
     // Graph internal methods
     // =======================
     _sparkline() {
-
-        // First compute the width taken by text for label and 
-        this.sparkTextwidth = 0;
-        this.lastPoint = this.data.slice(-1)[0];
-
         // Define X-axis
         this.x = d3.scaleLinear()
             .range([0, this.svgWidth-2])
@@ -616,7 +669,8 @@ class Grapher {
                   .x(d => this.x(d[this._options.x.name]))
                   .y(d => this.y(d[this._options.y.name])));
 
-        // Add point and circle
+        // Add point and circle for lastPoint
+        this.lastPoint = this.data.slice(-1)[0];
         this.sparkCircle = this.g.append('circle')
             .attr('class','sparkCircle')
             .attr('cx', this.x(this.lastPoint[this._options.x.name]))
@@ -634,7 +688,6 @@ class Grapher {
                 .attr('class','sparkText')
                 .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
                 .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this._options.sparkline.textColor}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block;`);
-            this.sparkTextwidth += this.sparkTextLastPoint.node().getBoundingClientRect().width;
         }
         if (this._options.y.label) {
             this.sparkTextYLabel = this.container
@@ -982,16 +1035,29 @@ class Grapher {
         const {xx, yy, width: w, height: h} = text.node().getBBox();
 
         // Make sure the tooltip is always in the graph area (and visible)
-        // console.log(h, mouseY, h + mouseY - 20, this.innerHeight, h + mouseY - 20 > this.innerHeight, mouseY - h, this.svgHeight, this.innerHeight);
-        let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
-            text_y = h + mouseY - 20 > this.innerHeight ? mouseY - h : mouseY;
-        text.attr("transform", `translate(${text_x},${text_y})`);
-
-        path.attr("x", text_x-5)
-            .attr("y", text_y - 20)
-            .attr("rx", 5)
-            .attr("width", w + 10)
-            .attr("height", h + 10);
+        if (this.isSparkline) {
+            let text_x = w + mouseX > this.svgWidth ? mouseX - w : mouseX,
+                text_y = mouseY - 5 < 0 ? mouseY + 5 : mouseY + h > this.innerHeight ? this.innerHeight - h : mouseY;
+            text.attr("transform", `translate(${text_x},${text_y})`);
+            
+            // Rectangle around text for tooltip
+            path.attr("x", text_x)
+                .attr("y", text_y - 11)
+                .attr("rx", 5)
+                .attr("width", w )
+                .attr("height", h); 
+        } else {
+            let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
+                text_y = mouseY - 20 < 0 ? mouseY + 20 : mouseY + h - 10 > this.innerHeight ? this.innerHeight - h + 10: mouseY;
+            text.attr("transform", `translate(${text_x},${text_y})`);
+            
+            // Rectangle around text for tooltip
+            path.attr("x", text_x - 5)
+                .attr("y", text_y - 20)
+                .attr("rx", 5)
+                .attr("width", w + 10)
+                .attr("height", h + 10);            
+        }
         
         return true;
     }
@@ -1019,7 +1085,7 @@ class Grapher {
                 mouse_y = d3.mouse(this)[1];
             if (mouse_x > 0) {
                 let mouseData = that._getMouseData(mouse_x);
-                that._buildTooltip(that.tooltip, mouseData, that.x(mouseData[0]), mouse_y + 30);
+                that._buildTooltip(that.tooltip, mouseData, that.x(mouseData[0]), mouse_y);
             }
         });
         this.g.on("touchend mouseleave", () => {this.tooltip.call(this._buildTooltip, null);});
@@ -1101,4 +1167,5 @@ class Grapher {
             this.svg.attr('width', this.svgWidth);
         }
     }
+    
 }
