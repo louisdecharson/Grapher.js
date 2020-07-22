@@ -86,6 +86,7 @@ Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, 
         -   [Parameters](#parameters-2)
     -   [draw](#draw)
         -   [Parameters](#parameters-3)
+    -   [wipe](#wipe)
     -   [downloadData](#downloaddata)
     -   [findTimeFormat](#findtimeformat)
         -   [Parameters](#parameters-4)
@@ -101,6 +102,9 @@ Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, 
         -   [Parameters](#parameters-9)
     -   [splitString](#splitstring)
         -   [Parameters](#parameters-10)
+    -   [wideToLong](#widetolong)
+        -   [Parameters](#parameters-11)
+        -   [Examples](#examples-1)
 
 ### Grapher
 
@@ -232,6 +236,11 @@ Draw the Grapher object
 
 -   `options` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | null)** you can pass an options Object to update the element's option. @link Grapher
 
+#### wipe
+
+Wipe the graph elements created by draw without removing the core elements
+so that the graph can be drawn again with .draw()
+
 #### downloadData
 
 Download the data associated with the Grapher element
@@ -311,6 +320,38 @@ on spaces inside the string.
 -   `sep` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** separator to be used to for splitting the string. The character should not be inside the string. (optional, default `"|"`)
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array of substrings
+
+#### wideToLong
+
+Transform a 'wide' array of Dict to 'long' array, pivoting on some
+'pivot' columns (keys). The long format is a {id, key, value},
+where id is one or multiple 'pivot' columns, 'key' are the non pivot columns
+of the original array and the value are the value of the corresponding keys.
+A category value can also be passed as a new 'column'. 
+The long format becomes {id, key, value, category}.
+A mapping function can also be passed to be applied to each long element 
+(for instance to parse a date)
+
+##### Parameters
+
+-   `wideData` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** data to pivot
+-   `pivotColumns` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** list of keys on which to pivot from wide to long
+-   `keyName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the key for variable name in the long format. (optional, default `"field_id"`)
+-   `valueName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the key for value in the long format (optional, default `"field_value"`)
+-   `category` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** optional category key to be added in the long data (optional, default `"undefined"`)
+-   `mapLongElement` **function (Dict)** optional function to be applied on each long element (optional, default `undefined`)
+
+##### Examples
+
+```javascript
+wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
+             {'date':'2020-07-20','temperature':25,'pressure':1020}];
+longArray = wideToLong(wideArray, ['date']);
+longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
+             {'date':'2020-07-19', 'field_id':'pressure','field_value':1016}
+             {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
+             {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}]
+```
 
 ## See also
 

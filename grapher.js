@@ -378,7 +378,7 @@ class Grapher {
     // Static properties are not yet supported by all internet browsers
     // using static methods insteady
     static version() {
-        return '0.0.5';
+        return '0.0.4b';
     }
 
     // Static Methods
@@ -534,21 +534,24 @@ class Grapher {
                       mapLongElement=undefined
                      ) {
         let longData = [],
-            columns = Object.keys(wide_data[0]),
+            columns = Object.keys(wideData[0]),
             wideColumns = columns.filter( x => !pivotColumns.includes(x));
         for (const element of wideData) {
             for (const col of wideColumns) {
                 let longElement = {};
                 longElement[keyName] = col;
                 longElement[valueName] = element[col];
+                for (const col of pivotColumns) {
+                    longElement[col] = element[col];
+                }
+                if (category != undefined) {
+                    longElement['category'] = category;
+                }
+                if (mapLongElement != undefined) {
+                    longElement = mapLongElement(longElement);
+                }
+                longData.push(longElement);
             }
-            if (category != undefined) {
-                longElement['category'] = category;
-            }
-            if (mapLongElement != undefined) {
-                longElement = mapLongElement(longElement);
-            }
-            longData.push(longElement);
         }
         return longData;
     }
@@ -609,6 +612,16 @@ class Grapher {
             
         }
     }
+    /**
+     * Wipe the graph elements created by draw without removing the core elements
+     * so that the graph can be drawn again with .draw()
+     */
+    wipe() {
+        // Remove everything except the overlay
+        this.g.selectAll(':not(.overlay)').remove();
+        this.container.selectAll('.sparkText').remove();
+    }
+    
     /** 
      * Download the data associated with the Grapher element
      *
