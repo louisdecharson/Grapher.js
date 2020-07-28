@@ -34,7 +34,8 @@
  * @param {Boolean} [options.y.nice=true] - Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see {@link https://github.com/d3/d3-scale#continuous_nice|d3-scale on Github}
  * @param {Object} options.category set of options for category
  * @param {string|null} [options.category.name=null] name of the category variable in options.data
- * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
+ * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip.
+ * @param {Object} [options.category.names=null] Change the displayed names of the categories (in tooltip and legend) by passing a dictionary with a key-value mapping with keys being the variable names and values the text to be displayed. Note that it will overwrite the parse function. Example: {'temperature': 'Temperature (in °C)', 'wind_speed': 'Wind Speed (in km/h)'}
  * @param {Array<string>|Boolean} [options.categories=false] - Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered.
  * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
  * @param {Object} options.style list of options for styling the elements of the graph
@@ -162,7 +163,8 @@ class Grapher {
             },
             "category": {
                 "name": null,
-                "parse": d => d
+                "parse": d => d,
+                "names": null
             },
             "categories": false,
             "type": "line",
@@ -329,6 +331,12 @@ class Grapher {
         }
         // set margins
         this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._fontSize*2 + 20 : 40)};
+
+        // If categories.names mapping is passed, then used it to define parse function
+        if (opt.category && opt.category.names) {
+            this._options.category.parse = (d) => this._options.category.names[d];
+        }
+        
     }
     _parseData() {
         if (this._options.x.parse || this._options.y.parse || this._options.categories.length > 0) {
@@ -431,7 +439,7 @@ class Grapher {
     static updateDict(dict,newDict) {
         for (const key of Object.keys(newDict)) {
             if (Object.keys(dict).indexOf(key) > -1) {
-                if (newDict[key] != null && newDict[key].constructor == Object) {
+                if (dict[key] != null && newDict[key] != null && newDict[key].constructor == Object) {
                     Grapher.updateDict(dict[key], newDict[key]);
                 } else {
                     dict[key] = newDict[key];
