@@ -51,10 +51,10 @@
  * @param {Object} options.grid - Options for the grid
  * @param {Object} options.grid.x - Options for grid on the x-axis
  * @param {Boolean} [options.grid.x.show=false] - if true, grid will be added (same frequency as ticks)
- * @param {{x:string, label: string, position:string, y: string, textAnchor: string, class: string}[]} [options.grid.x.lines=[]] - Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
+ * @param {{x:string, label: string, position:string, y: string, textAnchor: string, class: string, color: string, onTop:bool}[]} [options.grid.x.lines=[]] - Array for vertical lines. For each line, you should at least specify the position on the x-axis (same format as x axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'y' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'. You can customize the color of the lines and the label with 'color'. When setting 'onTop' to true, the lines will be drawn on top of the plot (instead of the default, behind)
  * @param {Object} options.grid.y - Options for grid on the y-axis
  * @param {Boolean} [options.grid.y.show=true] - if true, grid will be added (same frequency as ticks)
- * @param {{y:string, label: string, position:string, x: string, textAnchor: string, class: string}[]} [options.grid.y.lines=[]] - Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'.
+ * @param {{y:string, label: string, position:string, x: string, textAnchor: string, class: string, color: string, onTop:bool}[]} [options.grid.y.lines=[]] - Array for horizontal lines. For each line, you should at least specify the position on the y-axis (same format as y axis). You can add a label for which you can specify its position by choosing 'position' value among 'start', 'middle', 'end'. The label can also be more precisely positionned by specifying a 'x' and textAnchor value among 'start', 'middle', 'end'. You can also add a class with 'class'. You can customize the color of the lines and the label with 'color'. When setting 'onTop' to true, the lines will be drawn on top of the plot (instead of the default, behind)
  * @param {Object} options.legend - Options for the legend 
  * @param {Boolean} [options.legend.show=true] - show legend. If false, legend will not be displayed.
  * @param {number} [options.legend.x=15] - legend's x position in the svg 
@@ -209,7 +209,7 @@ class Grapher {
                 },
                 "y":{
                     "show": true,
-                    "lines": []
+                    "lines": []  
                 }
             },
             "advanced": {
@@ -601,15 +601,17 @@ class Grapher {
                 this._addYLabel();
             }
 
-            if (this._options.grid.y.lines.length > 0) {
-                this._addYGridLines();
-            }
-            if (this._options.grid.x.lines.length > 0) {
-                this._addXGridLines();
-            }
+            this._filterLinesOnTop();
+            this._addYGridLines(this._options.grid.y.linesBehind);
+            this._addXGridLines(this._options.grid.x.linesBehind);
+            // }
             
             // Add content      
             this._draw();
+
+            // Add lines on top
+            this._addYGridLines(this._options.grid.y.linesOnTop);
+            this._addXGridLines(this._options.grid.x.linesOnTop);
 
             
             // Add tooltip & legend
@@ -847,15 +849,15 @@ class Grapher {
             .attr('class','xGrid')
             .call(this.xGrid);
     }
-    _addYGridLines() {
-        for (const line of this._options.grid.y.lines) {
+    _addYGridLines(lines) {
+        for (const line of lines) {
             this.g.append("g")
                 .attr("class",`y grid-line ${line.class || ""}`)
                 .attr("transform", `translate(0, ${this.y(line.y)})`)
                 .attr("opacity","1")
                 .append('line')
                 .attr("class",`${line.class || ""}`)
-                .attr('stroke','currentColor')
+                .attr('stroke', line.color || 'currentColor')
                 .attr('x2', this.innerWidth);
             if (line.label) {
                 line.textAnchor = line.textAnchor || (line.position || "middle");
@@ -865,21 +867,21 @@ class Grapher {
                     .attr("x", line.xox)
                     .attr("dy", "1em")
                     .attr("class",`grid-line-label ${line.class || ""}`)
-                    .attr("style","font-size:0.8rem")
+                    .attr("style",`font-size:0.8rem; fill:${line.color || 'currentColor'}`)
                     .style("text-anchor", line.textAnchor)
                     .text(line.label);
             }
         }
     }
-    _addXGridLines() {
-        for (const line of this._options.grid.x.lines) {
+    _addXGridLines(lines) {
+        for (const line of lines) {
             this.g.append("g")
                 .attr("class",`x grid-line ${line.class || ""}`)
                 .attr("transform", `translate(${this.x(line.x)}, 0)`)
                 .attr("opacity","1")
                 .append('line')
                 .attr("class",`${line.class || ""}`)
-                .attr('stroke','currentColor')
+                .attr('stroke', line.color || 'currentColor')
                 .attr('y2', this.innerHeight);
             if (line.label) {
                 line.textAnchor = line.textAnchor || (line.position || "middle");
@@ -890,11 +892,20 @@ class Grapher {
                     .attr("x", this.x(line.x))
                     .attr("dy", "1em")
                     .attr("class",`grid-line-label ${line.class || ""}`)
-                    .attr("style","font-size:0.8rem")
+                    .attr("style",`font-size:0.8rem; fill:${line.color || 'currentColor'}`)
                     .style("text-anchor", line.textAnchor)
                     .text(line.label);
             }
         }
+    }
+    _filterLinesOnTop() {
+        // Separate lines that should be draw on top of the svg
+        // from lines that should be plotted after so potentially
+        // hidden from the main graph
+        this._options.grid.y.linesOnTop = this._options.grid.y.lines.filter(d => d.onTop);
+        this._options.grid.y.linesBehind = this._options.grid.y.lines.filter(d => !d.onTop);
+        this._options.grid.x.linesOnTop = this._options.grid.x.lines.filter(d => d.onTop);
+        this._options.grid.x.linesBehind = this._options.grid.x.lines.filter(d => !d.onTop);
     }
     _addYLabel() {
         // Add Title for X axis
