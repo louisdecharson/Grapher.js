@@ -441,7 +441,7 @@ class Grapher {
         for (const key of Object.keys(newDict)) {
             if (Object.keys(dict).indexOf(key) > -1 || newKey) {
                 if (dict[key] != null && newDict[key] != null && newDict[key].constructor == Object) {
-                    Grapher.updateDict(dict[key], newDict[key]);
+                    Grapher.updateDict(dict[key], newDict[key], newKey);
                 } else {
                     dict[key] = newDict[key];
                 }
