@@ -435,10 +435,11 @@ class Grapher {
      * Update a nested Object
      * @param {Object} dict - Object to update with values in newDict
      * @param {Object} newDict - Object containing key:values to update dict with 
+     * @param {Boolean} [newKey=false] - if a new key is found in `newDict` add it to `dict`.
      */
-    static updateDict(dict,newDict) {
+    static updateDict(dict,newDict, newKey = false) {
         for (const key of Object.keys(newDict)) {
-            if (Object.keys(dict).indexOf(key) > -1) {
+            if (Object.keys(dict).indexOf(key) > -1 || newKey) {
                 if (dict[key] != null && newDict[key] != null && newDict[key].constructor == Object) {
                     Grapher.updateDict(dict[key], newDict[key]);
                 } else {
