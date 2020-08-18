@@ -933,7 +933,7 @@ class Grapher {
                     .attr('stroke-width', this._options.style.strokeWidth)
                     .attr('d', d3.line()
                           .y(d => this.y(d[this._options.y.name]))
-                          .defined(d => d[this._options.y.name])
+                          .defined(d => this._options.y.scale == "scaleLog" ? d[this._options.y.name] > 0 : !isNaN(d[this._options.y.name]))
                           .x(d => this.x(d[this._options.x.name])));
             };
             if (this._options.type == "bar") {
@@ -1016,7 +1016,7 @@ class Grapher {
         
         if (this._options.type != "bar") {
             const dots = g.selectAll("circle")
-                  .data(data.slice(1))
+                  .data(data.slice(1).filter(d => !isNaN(d[this._options.y.name])))
                   .join("circle")
                   .style("fill", d => this.isSparkline ? this._options.sparkline["circle-color"] : this.color(d[this._options.category.name]))
                   .attr("r", this.isSparkline ? 2 : 5)
