@@ -385,7 +385,7 @@ class Grapher {
     // Static properties are not yet supported by all internet browsers
     // using static methods insteady
     static version() {
-        return '0.0.5';
+        return '0.1.0';
     }
 
     // Static Methods
