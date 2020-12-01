@@ -47,6 +47,7 @@
  * @param {string} [options.style.tooltipBackgroundColor="#ffffff"] - Background color of the tooltip
  * @param {string} [options.style.tooltipOpacity="0.8"] - Opacity of the tooltip. Default is 0.8 (80%)
  * @param {string} [options.style.tooltipLineColor="#000000"] - Color of the vertical line color
+ * @param {Boolean} [options.style.widenClosestLine=true] - Increase stroke-width by 1 of the closest line to current mouse cursor
  * @param {Object} options.grid - Options for the grid
  * @param {Object} options.grid.x - Options for grid on the x-axis
  * @param {Boolean} [options.grid.x.show=false] - if true, grid will be added (same frequency as ticks)
@@ -118,7 +119,7 @@ class Grapher {
 
         // Check if options set to sparkline
         if (options.type != undefined &&
-            options.type == "sparkline") {
+            (options.type == "sparkline") || (options.type == "sparklines")) {
             this.isSparkline = true;
         } else {
             this.isSparkline = false;
@@ -176,7 +177,8 @@ class Grapher {
                 "tooltipBackgroundColor": "#ffffff",
                 "tooltipOpacity": "0.8",
                 "tooltipLineColor": "#000000",
-                "tooltipFormat": (d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`
+                "tooltipFormat": (d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`,
+                "widenClosestLine": true
             },
             "legend": {
                 "show": true,
@@ -329,6 +331,11 @@ class Grapher {
         }
         // set margins
         this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._fontSize*2 + 20 : 40)};
+
+        // Copy some sparkline config to style
+        if (this.isSparkline) {
+            this._options.style.strokeWidth = this._options.sparkline.strokeWidth;
+        }
     }
     _parseData() {
         if (this._options.x.parse || this._options.y.parse || this._options.categories.length > 0) {
@@ -378,7 +385,7 @@ class Grapher {
     // Static properties are not yet supported by all internet browsers
     // using static methods insteady
     static version() {
-        return '0.0.4b';
+        return '0.0.5';
     }
 
     // Static Methods
@@ -493,7 +500,7 @@ class Grapher {
      * @param {string} [sep="|"] separator to be used to for splitting the string. The character should not be inside the string.
      * @returns {Array} array of substrings
      */
-    static splitString(s,n,sep="|") {
+    static splitString(s, n, sep="|") {
         return s.split('').reduce(
             (text, letter, index) => {
                 return ((text.split(sep).slice(-1)[0].length > n && letter === " ") ? text.concat(sep) : text.concat(letter)); 
@@ -579,6 +586,9 @@ class Grapher {
         // Add axis & grid
         if (this._options.type == "sparkline") {
             this._sparkline();
+            this._addTooltip();
+        } else if (this._options.type == "sparklines") {
+            this._sparklines();
             this._addTooltip();
         } else {
             this._addX();
@@ -675,7 +685,7 @@ class Grapher {
             .datum(this.data)
             .attr('class', 'sparkLine')
             .attr('fill', 'none')
-            .attr('stroke-width', this._options.sparkline.strokeWidth)
+            .attr('stroke-width', this._options.style.strokeWidth)
             .attr('stroke', this._options.sparkline.lineColor)
             .attr('d',d3.line()
                   .curve(d3.curveBasis)
@@ -709,6 +719,93 @@ class Grapher {
                 .text(this._options.y.label)
                 .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
         }       
+    }
+    _sparklines() {
+        // Define X-axis
+        this.x = d3.scaleLinear()
+            .range([0, this.svgWidth-2])
+            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
+        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
+        
+        // Define y-axis
+        this.y = d3.scaleLinear()
+            .range([this.svgHeight-4, 0])
+            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale));
+        
+        // Remove existing
+        this.svg.selectAll('g.sparkline').remove();
+
+        // Change svg and g container
+        this.container.attr('style','vertical-align:middle; display:inline-block;');
+        this.g.attr('transform', 'translate(0,2)')
+            .attr('class','sparkline');
+
+        // Add range
+        if (this._options.sparkline.range) {
+            let dataRange = this.data.map(
+                d => { d.minRange = this._options.sparkline.range[0];
+                       d.maxRange = this._options.sparkline.range[1];
+                       return d;}
+            );
+            this.g.append('path')
+                .datum(dataRange)
+                .attr('fill', this._options.sparkline.rangeFillColor)
+                .attr('stroke','none')
+                .attr('d', d3.area()
+                      .x(d => this.x(d[this._options.x.name]))
+                      .y0(d => this.y(d.minRange))
+                      .y1(d => this.y(d.maxRange)));
+        }
+        this.container.selectAll('.sparkText').remove();
+        this._paths = {};
+        this._sparkTextLastPoints = {};
+        this._sparkTextYLabels = {};
+        for (const category of this._options._categories) {
+            let dataFiltered = this.data.filter(
+                d => d[this._options.category.name] === category
+            );
+            this._paths[category] = this.g.append('path')
+                .datum(dataFiltered)
+                .attr('class', 'sparkLine')
+                .attr('fill', 'none')
+                .attr('stroke-width', this._options.style.strokeWidth)
+                .attr('stroke', this.color(category))
+                .attr('d', d3.line()
+                      .curve(d3.curveCatmullRom)
+                      .x(d => this.x(d[this._options.x.name]))
+                      .y(d => this.y(d[this._options.y.name])));
+            this.lastPoint = dataFiltered.slice(-1)[0];
+            this.sparkCircle = this.g.append('circle')
+                .attr('class','sparkCircle')
+                .attr('cx', this.x(this.lastPoint[this._options.x.name]))
+                .attr('cy', this.y(this.lastPoint[this._options.y.name]))
+                .attr('r', 1.5)
+                .attr('fill', this.color(category))
+                .attr('stroke', 'none');
+            if (this._options.sparkline.textLastPoint) {
+                this._sparkTextLastPoints[category] = this.container
+                    .append('span')
+                    .attr('class',`sparkText ${category}`)
+                    .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
+                    .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this.color(category)}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display: none;`);
+                this._sparkTextYLabels[category] = this.container
+                    .append('span')
+                    .attr('class',`sparkText ${category}`)
+                    .text(category)
+                    .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; padding-left: 0.4rem; display: none;`);
+            }
+        }
+    }
+    _style(element, styleAttr, styleValue) {
+        let style = element
+            .attr('style')
+            .split(';')
+            .filter(d => d.length > 0)
+            .map(d => d.replace(' ','').split(':'))
+            .reduce((d, [k, v]) => {d[k] = v; return d;},{});
+        style[styleAttr] = styleValue;
+        element.attr('style', Object.entries(style).map(d => d.join(":")).join(";"));
+        return style;
     }
     _addX() {
         // (i) Find the width
@@ -903,9 +1000,10 @@ class Grapher {
         this.g.selectAll('path.lines').remove();
         this.g.selectAll(`rect.bar`).remove();
         this.g.selectAll(`circle.dots`).remove();
+        this._paths = {};
         for (const category of this._options._categories) {
             if (['line','dotted-line'].indexOf(this._options.type) > -1) {
-                this.g.append('path')
+                this._paths[category] = this.g.append('path')
                     .datum(this.data.filter(d => d[this._options.category.name] === category))
                     .attr('class','lines')
                     .attr('fill', 'none')
@@ -1082,13 +1180,37 @@ class Grapher {
             b = mouseIndex > this.xValues.length - 1 ? this.xValues.slice(-1)[0] : this.xValues[mouseIndex];
         // We get value before mouseIndex and at mouseIndex to find out to which value mouse is the closest;
 
-        // console.log(mouseXValue_, mouseIndex, a, b);
         let mouseXValue = mouseXValue_ - a > b - mouseXValue_ ? b : a,
             mouseYValues = this.data.filter(d => d[this._options.x.name].toString() == mouseXValue.toString())
             .sort((a,b) => b[this._options.y.name] - a[this._options.y.name]);
         return [mouseXValue].concat(mouseYValues);
     }
-
+    _widenClosestLine(mouseData, mouse_y) {
+        if (this.hasOwnProperty('_paths') && this._options.style.widenClosestLine) {
+            let closestCategoryAtPoint = null;
+            if (mouseData) {
+                closestCategoryAtPoint = mouseData.slice(1).sort(
+                    (a,b) => (Math.abs(a[this._options.y.name]- mouse_y))
+                              -Math.abs(b[this._options.y.name]- mouse_y))[0]
+                [this._options.category.name];
+            }
+            for (const [category, path] of Object.entries(this._paths)) {
+                if (category === closestCategoryAtPoint) {
+                    path.attr('stroke-width', this._options.style.strokeWidth + 1);
+                    if (this.isSparkline && this._options.sparkline.textLastPoint) {
+                        this._style(this._sparkTextLastPoints[category], "display","inline-block");
+                        this._style(this._sparkTextYLabels[category], "display","inline-block");
+                    }
+                } else {
+                    path.attr('stroke-width', this._options.style.strokeWidth);
+                    if (this.isSparkline && this._options.sparkline.textLastPoint) {
+                        this._style(this._sparkTextLastPoints[category], "display","none");
+                        this._style(this._sparkTextYLabels[category], "display","none");
+                    }
+                }
+            }
+        }
+    }
     _addTooltip() {
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
@@ -1099,9 +1221,13 @@ class Grapher {
             if (mouse_x > 0) {
                 let mouseData = that._getMouseData(mouse_x);
                 that._buildTooltip(that.tooltip, mouseData, that.x(mouseData[0]), mouse_y);
+                that._widenClosestLine(mouseData, that.y.invert(mouse_y));
             }
         });
-        this.g.on("touchend mouseleave", () => {this.tooltip.call(this._buildTooltip, null);});
+        this.g.on("touchend mouseleave", () => {
+            this.tooltip.call(this._buildTooltip, null);
+            this._widenClosestLine(null, null);
+        });
     }
 
     _addLegend() {

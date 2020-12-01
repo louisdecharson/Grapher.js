@@ -150,6 +150,7 @@ You create a `Grapher` by specifying a `container` (a DOM element)
         -   `options.style.tooltipBackgroundColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Background color of the tooltip (optional, default `"#ffffff"`)
         -   `options.style.tooltipOpacity` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Opacity of the tooltip. Default is 0.8 (80%) (optional, default `"0.8"`)
         -   `options.style.tooltipLineColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Color of the vertical line color (optional, default `"#000000"`)
+        -   `options.style.widenClosestLine` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Increase stroke-width by 1 of the closest line to current mouse cursor (optional, default `true`)
     -   `options.grid` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for the grid
         -   `options.grid.x` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options for grid on the x-axis
             -   `options.grid.x.show` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** if true, grid will be added (same frequency as ticks) (optional, default `false`)
