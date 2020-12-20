@@ -110,6 +110,20 @@ class Grapher {
         // Find font size of the element
         this._fontSize = parseFloat(window.getComputedStyle(this.el).fontSize);
 
+        // Define style & color from current element:
+        let elBgColor = window.getComputedStyle(this.el).backgroundColor,
+            bodyBgColor = window.getComputedStyle(document.body).backgroundColor;
+        this._style = {
+            "colorPalette": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
+            "color": window.getComputedStyle(this.el).color,
+            "backgroundColor": (
+                elBgColor == "rgba(0, 0, 0, 0)" ? (
+                    bodyBgColor == "rgba(0, 0, 0, 0)" ? "rgb(255, 255, 255)" : bodyBgColor
+                ) : elBgColor
+            ),
+            "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
+        };
+
         // Add a container for the graph
         this.container = d3.select(`#${this.id}`)
             .append('span')
@@ -168,16 +182,18 @@ class Grapher {
             "categories": false,
             "type": "line",
             "style": {
-                "colors": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
+                "colors": this._style.colorPalette,
                 "barWidth": 0.8,
                 "strokeWidth": 3,
                 "dotSize": 4,
                 "grid": true,
-                "tooltipColor": "#181818",
-                "tooltipBackgroundColor": "#ffffff",
+                "tooltipColor": this._style.color,
+                "tooltipBackgroundColor": this._style.backgroundColor,
                 "tooltipOpacity": "0.8",
-                "tooltipLineColor": "#000000",
-                "tooltipFormat": (d,i) => i === 0 ? this._options.x.tickFormat(d) : `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`,
+                "tooltipLineColor": this._style.color,
+                "tooltipFormat": ((d,i) => i === 0 ?
+                                  this._options.x.tickFormat(d) :
+                                  `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`),
                 "widenClosestLine": true
             },
             "legend": {
@@ -185,7 +201,7 @@ class Grapher {
                 "x": 15, 
                 "y": this._margin.top,
                 "interstice": 25, // distance between dots
-                "backgroundColor": "#ffffff",
+                "backgroundColor": this._style.backgroundColor,
                 "opacity": "0.9"
             },
             "download": {
@@ -195,12 +211,14 @@ class Grapher {
                 "range": null, // either null or array [min, max]
                 "textLastPoint": true,
                 "strokeWidth": 1,
-                "lineColor": "#000000",
+                "lineColor": this._style.color,
                 "circleColor": "#f00",
                 "textColor": "#f00",
                 "textFontSize": "85%",
                 "textFontWeight": "600",
-                "rangeFillColor": "#ccc"
+                "rangeFillColor": Grapher.barycenterColor(this._style.color,
+                                                          this._style.backgroundColor,
+                                                          0.2)
             },
             "grid": {
                 "x": {
@@ -244,7 +262,7 @@ class Grapher {
         } else {
             this._margin = {"top": top,
                             "right": typeof right == "function" ? right(this.svgWidth) : right,
-                            "bottom": bottom || this._fontSize*2 + 20,
+                            "bottom": bottom || this._style.fontSize*2 + 20,
                             "left": typeof left == "function" ? left(this.svgWidth) : left};
         }
         this._innerDimensions();
@@ -330,7 +348,7 @@ class Grapher {
             this._parseData();
         }
         // set margins
-        this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._fontSize*2 + 20 : 40)};
+        this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._style.fontSize*2 + 20 : 40)};
 
         // Copy some sparkline config to style
         if (this.isSparkline) {
@@ -385,7 +403,7 @@ class Grapher {
     // Static properties are not yet supported by all internet browsers
     // using static methods insteady
     static version() {
-        return '0.1.0';
+        return '0.2.0';
     }
 
     // Static Methods
@@ -562,6 +580,27 @@ class Grapher {
         }
         return longData;
     }
+    /**
+     * Compute the barycenter between two colors. 
+     * Returned color will be startColor * weight + endColor * (1 - weight)
+     * @param {string} startColor - starting color in rgb / hsl format
+     * @param {string} endColor - ending color in rgb / hsl format
+     * @param {number} weight - weight of the first color
+     * @returns {string} - the barycenter color
+     */
+    static barycenterColor(startColor, endColor, weight) {
+        let repr = startColor.match(/(rgb|rgba|hsl)/)[0];
+        let parseColor = (d) => (d.replace(/( |rgb|rgba|hsl|\(|\))/g,"")
+                                 .split(",")
+                                 .map(d => parseInt(d)));
+        startColor = parseColor(startColor);
+        endColor = parseColor(endColor);
+        let returnColor = startColor.map(
+            (d, i) => weight * d + (1 - weight) * (endColor[i] || 0)
+        );
+        return `${repr}(${returnColor})`;
+    };
+
     
     
     // Drawing methods
@@ -849,6 +888,7 @@ class Grapher {
             .attr("class","xLabel axisLabel")
             .attr("transform", `translate(${this.innerWidth/2},${this.svgHeight-this._margin.bottom/2})`)
             .style("text-anchor","middle")
+            .style("fill", this._style.color)
             .text(this._options.x.label);
     };
 
@@ -956,6 +996,7 @@ class Grapher {
                     .attr("class",`grid-line-label ${line.class || ""}`)
                     .attr("style","font-size:0.8rem")
                     .style("text-anchor", line.textAnchor)
+                    .style("fill", this._style.color)
                     .text(line.label);
             }
         }
@@ -981,6 +1022,7 @@ class Grapher {
                     .attr("class",`grid-line-label ${line.class || ""}`)
                     .attr("style","font-size:0.8rem")
                     .style("text-anchor", line.textAnchor)
+                    .style("fill", this._style.color)
                     .text(line.label);
             }
         }
@@ -994,6 +1036,7 @@ class Grapher {
             .attr("dy", "1em")
             .attr("class","yLabel axisLabel")
             .style("text-anchor", "middle")
+            .style("fill", this._style.color)
             .text(this._options.y.label);   
     }
     _draw() {
@@ -1056,7 +1099,7 @@ class Grapher {
                 .attr('x',10)
                 .attr('y',10);
             let textAlert = "WARNING: Graph cannot be plotted because there are too many bars to be displayed compare to the available width.",
-                textAlertA = Grapher.splitString(textAlert,Math.floor(this.innerWidth / this._fontSize));
+                textAlertA = Grapher.splitString(textAlert,Math.floor(this.innerWidth / this._style.fontSize));
             alertBarZeroWidth.selectAll("rect.alert_barzerowidth")
                 .data([null])
                 .join("rect")
@@ -1070,7 +1113,7 @@ class Grapher {
                       .data(textAlertA)
                       .join("tspan")
                       .attr("x", 20)
-                      .attr("y", (d, i) => `${this.innerHeight / 2 + (i-textAlertA.length/2)* 1.1 * this._fontSize}px`)
+                      .attr("y", (d, i) => `${this.innerHeight / 2 + (i-textAlertA.length/2)* 1.1 * this._style.fontSize}px`)
                       .attr("class","tooltip_text")
                       .style("font-weight","bold")
                       .style("font-size","1em")
@@ -1215,9 +1258,9 @@ class Grapher {
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
         let that = this;
-        this.g.on("touchmove mousemove", function() {
-            let mouse_x = d3.mouse(this)[0],
-                mouse_y = d3.mouse(this)[1];
+        this.g.on("touchmove mousemove", (event) => {
+            let mouse_x = d3.pointer(event)[0],
+                mouse_y = d3.pointer(event)[1];
             if (mouse_x > 0) {
                 let mouseData = that._getMouseData(mouse_x);
                 that._buildTooltip(that.tooltip, mouseData, that.x(mouseData[0]), mouse_y);

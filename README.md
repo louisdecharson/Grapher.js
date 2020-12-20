@@ -105,6 +105,8 @@ Grapher is a minimal wrapper around [D3.js](https://d3js.org) to do line plots, 
     -   [wideToLong](#widetolong)
         -   [Parameters](#parameters-11)
         -   [Examples](#examples-1)
+    -   [barycenterColor](#barycentercolor)
+        -   [Parameters](#parameters-12)
 
 ### Grapher
 
@@ -353,6 +355,19 @@ longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
              {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
              {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}]
 ```
+
+#### barycenterColor
+
+Compute the barycenter between two colors. 
+Returned color will be startColor _ weight + endColor _ (1 - weight)
+
+##### Parameters
+
+-   `startColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** starting color in rgb / hsl format
+-   `endColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** ending color in rgb / hsl format
+-   `weight` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** weight of the first color
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** the barycenter color
 
 ## See also
 
