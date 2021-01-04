@@ -111,16 +111,10 @@ class Grapher {
         this._fontSize = parseFloat(window.getComputedStyle(this.el).fontSize);
 
         // Define style & color from current element:
-        let elBgColor = window.getComputedStyle(this.el).backgroundColor,
-            bodyBgColor = window.getComputedStyle(document.body).backgroundColor;
         this._style = {
             "colorPalette": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
             "color": window.getComputedStyle(this.el).color,
-            "backgroundColor": (
-                elBgColor == "rgba(0, 0, 0, 0)" ? (
-                    bodyBgColor == "rgba(0, 0, 0, 0)" ? "rgb(255, 255, 255)" : bodyBgColor
-                ) : elBgColor
-            ),
+            "backgroundColor": Grapher.getBackgroundColor(this.el),
             "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
         };
 
@@ -449,7 +443,7 @@ class Grapher {
     }
     
     /**
-     * Update a nested Object
+     * Update a nested dictionary (stored as an Object)
      * @param {Object} dict - Object to update with values in newDict
      * @param {Object} newDict - Object containing key:values to update dict with 
      */
@@ -492,7 +486,7 @@ class Grapher {
      * @param {Boolean} [header=true] - If true, first line of the csv fine will be a header composed of the first object keys
      * @returns {String} - return a csv file as a string
      */
-    static to_csv(j,header=true) {
+    static to_csv(j, header=true) {
         let csv = '';
         if (j.length > 0) {
             let keys = Object.keys(j[0]);
@@ -509,6 +503,7 @@ class Grapher {
         }
         return csv.toString();
     }
+    
     /**
      * Split a string in substrings of length of approx. n characters
      * and splitting on space only. The function will split the string in substring of minimum length 'n'
@@ -600,6 +595,20 @@ class Grapher {
         );
         return `${repr}(${returnColor})`;
     };
+
+    static getBackgroundColor(el, defaultColor = "rgb(255, 255, 255)") {
+        let elBgColor = window.getComputedStyle(el).backgroundColor;
+        while (elBgColor === "rgba(0, 0, 0, 0)" || elBgColor === "transparent") {
+            el = el.parentElement;
+            if (el == null) {
+                return defaultColor;
+            } else {
+                elBgColor = window.getComputedStyle(el).backgroundColor;
+            }
+        }
+        return elBgColor;
+    };
+    
 
     
     
@@ -1348,6 +1357,125 @@ class Grapher {
             this.svgWidth = this.width - this.sparkTextWidth;
             this.svg.attr('width', this.svgWidth);
         }
+    } 
+}
+
+class Donut {
+    constructor(id, options = {}, size = null) {
+        this.id = id;
+        this.el = document.getElementById(this.id);
+        this.size =  size || Math.min(this.el.offsetWidth, this.el.offsetHeight);
+
+        this._style = {
+            "color": window.getComputedStyle(this.el).color,
+            "foregroundColor": "#1abb9b",
+            "backgroundColor": Grapher.barycenterColor(
+                window.getComputedStyle(this.el).color,
+                Grapher.getBackgroundColor(this.el),
+                0.6),
+            "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
+        };        
+        this.svg = d3.select(`#${this.id}`)
+            .append("svg")
+            .attr("id", this.id + '_svg')
+            .attr('class','gauge')
+            .attr("width", this.size)
+            .attr("height", this.size);
+        
+        this.g = this.svg
+            .append("g")
+            .attr("transform", `translate(${this.size/2},${this.size/2})`);
+        
+        this._options = {
+            "value": 50,
+            "foregroundColor": d => this._style.foregroundColor,
+            "backgroundColor": this._style.backgroundColor,
+            "innerRadius": 0.4*this.size,
+            "outerRadius": this.size/2,
+            "startAngle": -180,
+            "endAngle": 180,
+            "minValue": 0,
+            "maxValue": 100,
+            "displayValue": true,
+            "fontSize": this._style.fontSize,
+            "displayText": d => d,
+            "cornerRadius": 0,
+            "maxHeight": this.size,
+            "padAngle": 0.03
+        };
+        this.options = options;
+
     }
-    
+    arc() {
+        return d3.arc()
+            .innerRadius(this._options.innerRadius)
+            .outerRadius(this._options.outerRadius)
+            .padAngle(this._options.padAngle)
+            .startAngle(this._deg2rad(this._options.startAngle))
+            .cornerRadius(this._options.cornerRadius);
+    }
+    get options () {
+        return this._options;
+    }
+    set options(opt) {
+        Grapher.updateDict(this._options, opt);
+        this.degree = d3.scaleLinear()
+            .range([this._options.startAngle, this._options.endAngle])
+            .domain([this._options.minValue, this._options.maxValue]);
+        this.el.style.maxHeight = this._options.maxHeight;
+    }
+    _deg2rad(angle) {return angle * Math.PI / 180;}
+    setArcInBound(angle) {
+        if (angle >= this._options.startAngle && angle <= this._options.endAngle) {
+            return angle;
+        } else if (angle <= this._options.startAngle) {
+            return this._options.startAngle;
+        } else {
+            return this._options.endAngle;
+        }
+    }
+    draw(options) {
+        if (options) {
+            this.options = options;
+        }
+        // Draw background
+        this.g.append("path")
+            .datum({endAngle: this._deg2rad(this._options.endAngle)})
+            .attr("class","gauge background")
+            .attr("fill", this._options.backgroundColor)
+            .attr("d", this.arc());
+        
+        // Draw foreground
+        this.g.append("path")
+            .datum({endAngle: this._deg2rad(
+                this.setArcInBound(this.degree(this._options.value))
+            )})
+            .attr("class","gauge foreground")
+            .attr("fill", this._options.foregroundColor(this._options.value))
+            .attr("d", this.arc());
+        // Add current value
+        this.g.append("text")
+            .attr("transform", `translate(0,0)`)
+            .attr("text-anchor", "middle")
+            .style("font-size", this._options.fontSize)
+            .style("fill", this._style.color)
+            .text(this._options.displayText(this._options.value));
+    }
+}
+
+class Gauge extends Donut {
+    constructor(id,
+                options={},
+                size = null) {
+        super(id,
+              options = {},
+              size);
+        this.options = {
+            "maxHeight": this.size / 2 + "px",
+            "cornerRadius": this.size / 10,
+            "startAngle": -90,
+            "endAngle": 90,
+            "padAngle": 0
+        };
+    }
 }
