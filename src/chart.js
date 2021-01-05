@@ -1,17 +1,15 @@
-/* 
- * Grapher - Tiny wrapper around D3.js for line and bar charts
- * @copyright Louis de Charsonville 2020
- */
-
+import { GrapherBase } from "./base.js";
+import { updateDict, unique, findTimeFormat, splitString } from "./utils.js";
+import { colorPalette } from "./defaults.js";
 
 /**
- * The `Grapher` object represents the graph.
+ * The `Chart` object represents the graph.
  *
- * You create a `Grapher` by specifying a `container` (a DOM element)
- *  that will contain the graph, and other options.
+ * You create a `Chart` by specifying a `container` (a DOM element)
+ * that will contain the graph, and other options.
  *
  *
- * @class Grapher
+ * @class Chart
  * @param {string} id of the DOM element
  * @param {Object} options Set of options for the graph. 
  * @param {Array<Object>} [options.data=[]] Array of JSON containing the data
@@ -47,7 +45,7 @@
  * @param {string} [options.style.tooltipBackgroundColor="#ffffff"] - Background color of the tooltip
  * @param {string} [options.style.tooltipOpacity="0.8"] - Opacity of the tooltip. Default is 0.8 (80%)
  * @param {string} [options.style.tooltipLineColor="#000000"] - Color of the vertical line color
- * @param {Boolean} [options.style.widenClosestLine=true] - Increase stroke-width by 1 of the closest line to current mouse cursor
+ * @param {string|function} [options.style.beautifyClosestLine="widen"] - Beautify the closest line to current mouse cursor (only works for line or dotted-lines). Possible options are either "widen" (increase the stroke-width by 1), "color" (color the closest line, grayed the others) or you can pass a function that will be applied on every lines and takes four parameters: the element itself, whether the line is the closest, the path and the category.
  * @param {Object} options.grid - Options for the grid
  * @param {Object} options.grid.x - Options for grid on the x-axis
  * @param {Boolean} [options.grid.x.show=false] - if true, grid will be added (same frequency as ticks)
@@ -80,6 +78,7 @@
  * @param {string} [options.sparkline.rangeFillColor="#ccc"] - range's band fill color
  * @param {number} [width=null] width of the DOM element (if not already setup in HTML or CSS)
  * @param {number} [height=null] height of the DOM element (if not already setup in HTML or CSS)
+ *
  * @example 
  * let myGraphExample1 = new Grapher('myGraphExample1',
  *                                 {"data": data,
@@ -98,138 +97,18 @@
  *                                   "type": "dotted-line",
  *                                   });
  */
-class Grapher {
-    constructor(id, options = {}, width = null, height = null) {
-        this.id = id;
-        this.el = document.getElementById(this.id);
-
-        // Setting width and height
-        this.width =  width || this.el.offsetWidth;
-        this.height = height || this.el.offsetHeight;
-
-        // Find font size of the element
-        this._fontSize = parseFloat(window.getComputedStyle(this.el).fontSize);
-
-        // Define style & color from current element:
-        this._style = {
-            "colorPalette": ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"],
-            "color": window.getComputedStyle(this.el).color,
-            "backgroundColor": Grapher.getBackgroundColor(this.el),
-            "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
-        };
-
-        // Add a container for the graph
-        this.container = d3.select(`#${this.id}`)
-            .append('span')
-            .attr('class','grapherContainer')
-            .attr("width", this.width)
-            .attr("height", this.height);
-
-        // Check if options set to sparkline
-        if (options.type != undefined &&
-            (options.type == "sparkline") || (options.type == "sparklines")) {
-            this.isSparkline = true;
-        } else {
-            this.isSparkline = false;
-        }
-
-        this.svgWidth = this.width;
-        this.svgHeight = this.height;
+class Chart extends GrapherBase {
+    constructor(id, type = "line", options = {}, width = null, height = null) {
+        super(id, type, width, height);
         
-        // Add svg
-        this.svg = this.container
-            .append("svg")
-            .attr("id", this.id + '_svg')
-            .attr('class','grapher')
-            .attr("width", this.svgWidth)
-            .attr("height", this.svgHeight);
-
-        // Create margins
-        this._margin = {};
-        this.margin = {};
-
         // Set default options and update with options pass by user
-        this._options = {
-            "data": [],
-            "x": {
-                "name": "x",
-                "scale": "scaleLinear",
-                "tickFormat": d3.format('.3s'),
-                "parse": null,
-                "label": null,
-                "domain": null,
-                "nice": false
-            },
-            "y": {
-                "name": "y",
-                "scale": "scaleLinear",
-                "tickFormat": d3.format('.3s'),
-                "parse": null,
-                "label": null,
-                "domain": null,
-                "nice": true
-            },
-            "category": {
-                "name": null,
-                "parse": d => d
-            },
-            "categories": false,
-            "type": "line",
-            "style": {
-                "colors": this._style.colorPalette,
-                "barWidth": 0.8,
-                "strokeWidth": 3,
-                "dotSize": 4,
-                "grid": true,
-                "tooltipColor": this._style.color,
-                "tooltipBackgroundColor": this._style.backgroundColor,
-                "tooltipOpacity": "0.8",
-                "tooltipLineColor": this._style.color,
-                "tooltipFormat": ((d,i) => i === 0 ?
-                                  this._options.x.tickFormat(d) :
-                                  `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`),
-                "widenClosestLine": true
-            },
-            "legend": {
-                "show": true,
-                "x": 15, 
-                "y": this._margin.top,
-                "interstice": 25, // distance between dots
-                "backgroundColor": this._style.backgroundColor,
-                "opacity": "0.9"
-            },
-            "download": {
-                "filename": `data_${this.id}_${Date.now()}.csv`
-            },
-            "sparkline": {
-                "range": null, // either null or array [min, max]
-                "textLastPoint": true,
-                "strokeWidth": 1,
-                "lineColor": this._style.color,
-                "circleColor": "#f00",
-                "textColor": "#f00",
-                "textFontSize": "85%",
-                "textFontWeight": "600",
-                "rangeFillColor": Grapher.barycenterColor(this._style.color,
-                                                          this._style.backgroundColor,
-                                                          0.2)
-            },
-            "grid": {
-                "x": {
-                    "show": false,
-                    "lines": []
-                },
-                "y":{
-                    "show": true,
-                    "lines": []
-                }
-            },
-            "advanced": {
-                "additionalColumnsInData": []
-            }
-        };
+        this._options = this._defaultOptions();
+        
         // Update options
         this.options = options;
+
+        // Check if type is sparkline
+        this.isSparkline = this.type.includes("sparkline");
     }
     
     /**
@@ -251,14 +130,10 @@ class Grapher {
                 right=((x) => x < 400 ? 20 : 30),
                 bottom,
                 left=(x) => x < 400 ? 40 : 60}={}){
-        if (this.isSparkline) {
-            this._margin = {"top": 0, "right": 0, "bottom": 0, "left": 0};
-        } else {
-            this._margin = {"top": top,
+        this._margin = {"top": top,
                             "right": typeof right == "function" ? right(this.svgWidth) : right,
                             "bottom": bottom || this._style.fontSize*2 + 20,
                             "left": typeof left == "function" ? left(this.svgWidth) : left};
-        }
         this._innerDimensions();
     }
 
@@ -304,14 +179,14 @@ class Grapher {
         return this._options;
     }
     set options(opt) {
-        Grapher.updateDict(this._options, opt);
+        updateDict(this._options, opt);
 
         // No category is specified, we derive it from y label / name
         if (! opt.category && ! this._options.category.name) {
             this._options._categories = [this._options.y.label] || [this._options.y.name];
         } else if ( ! this._options.categories && this._options.category.name) {
             // When no list of categories is user-defined, we derive it from the data
-            this._options._categories = Grapher.unique(this._options.data.map(d => d[this._options.category.name]));
+            this._options._categories = unique(this._options.data.map(d => d[this._options.category.name]));
         } else {
             this._options._categories = this._options.categories;
         }
@@ -326,10 +201,10 @@ class Grapher {
 
         // If user don't specify a tickFormat while using d3.timeParse, use the format arg of d3.timeParse for tickFormat
         if (opt.x && ! opt.x.tickFormat && opt.x.parse && opt.x.parse.toString().includes('d3.timeParse')) {
-            this._options.x.tickFormat = d3.timeFormat(Grapher.findTimeFormat(opt.x.parse.toString()));
+            this._options.x.tickFormat = d3.timeFormat(findTimeFormat(opt.x.parse.toString()));
         }
         if (opt.y && ! opt.y.tickFormat && opt.y.parse && opt.y.parse.toString().includes('d3.timeParse')) {
-            this._options.y.tickFormat = d3.timeFormat(Grapher.findTimeFormat(opt.y.parse.toString()));
+            this._options.y.tickFormat = d3.timeFormat(findTimeFormat(opt.y.parse.toString()));
         }
         
         // Defines color function
@@ -344,7 +219,7 @@ class Grapher {
         // set margins
         this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._style.fontSize*2 + 20 : 40)};
 
-        // Copy some sparkline config to style
+        // // Copy some sparkline config to style
         if (this.isSparkline) {
             this._options.style.strokeWidth = this._options.sparkline.strokeWidth;
         }
@@ -392,226 +267,6 @@ class Grapher {
         }
     }
 
-    // Static Properties
-    // =================
-    // Static properties are not yet supported by all internet browsers
-    // using static methods insteady
-    static version() {
-        return '0.2.0';
-    }
-
-    // Static Methods
-    // =============
-    /**
-     * Return the timeformat in d3.timeParse function
-     * @param {string} str - string containing d3.timeParse(xxx)
-     * @return {string} time format argument of d3.timeParse function
-     */
-    static findTimeFormat(str) {
-        // Find the time format argument in timeParse
-        let a = str.indexOf('d3.timeParse') + 14,
-            b = str.slice(a),
-            c = b.indexOf(')')-1;
-        return b.slice(0,c);
-    }
-
-    /**
-     * Return unique values of an array (including if there are dates)
-     * @param {Array} arr - array
-     * @return {Array} of unique values of 'arr'
-     */
-    static unique(arr) {
-        if (arr.every(e => e instanceof Date)) {
-            let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
-            return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
-        } else if (arr.every(e => typeof e == "number")){
-            return Array.from(new Set(arr)).sort((a,b) => a-b);
-        } else {
-            return Array.from(new Set(arr)).sort();
-        }
-    }
-    /**
-     * Get optimal decimal precision for number formatting
-     * @param {number} maxN - maximum number in the data
-     * @returns {string} - optimal format for d3.format
-     */
-    static getOptimalPrecision(maxN) {
-        return `.${Math.abs(Math.floor(Math.log10((maxN > 0 ? maxN : 1))))+1}%`;
-    }
-    static formatTick(isLogScale, isPercentage) {
-        return (d => isLogScale ? (Number.isInteger(Math.log10(d)) ? d3.format('.3s')(d) : null) : d3.format(isPercentage ? Grapher.getOptimalPrecision(d) : '.3s')(d));
-    }
-    
-    /**
-     * Update a nested dictionary (stored as an Object)
-     * @param {Object} dict - Object to update with values in newDict
-     * @param {Object} newDict - Object containing key:values to update dict with 
-     */
-    static updateDict(dict,newDict) {
-        for (const key of Object.keys(newDict)) {
-            if (Object.keys(dict).indexOf(key) > -1) {
-                if (newDict[key] != null && newDict[key].constructor == Object) {
-                    Grapher.updateDict(dict[key], newDict[key]);
-                } else {
-                    dict[key] = newDict[key];
-                }
-            }
-        }
-    }
-
-    /**
-     * Retrieve the width and height of some text based on its font
-     * @param {string} text - text to be measured
-     * @param {string} fontSize - fontSize of the text
-     * @returns {Object} - Object with width and height of the text as if it was on the DOM
-     */
-    static getDimensionText(text, fontSize) {
-        let element = document.createElement('div');
-        element.style.cssText = `position:absolute;visibility:hidden;width:auto;height:auto;white-space:nowrap;font-size:${fontSize}`;
-        element.setAttribute('id','element_compute_dim');
-        document.body.appendChild(element);
-        element = document.getElementById('element_compute_dim');
-        element.innerHTML = text;
-        let width = element.clientWidth,
-            height = element.clientHeight;
-        element.remove();
-        return {width: width, height: height};
-        
-    }
-    
-    /** 
-     * Transform a JSON object into a csv
-     * @param {Array<Object>} j - Array of objects, each object should has the same number of keys (and each key is going to be a column). 
-     *   Each element of the array is going to be a line.
-     * @param {Boolean} [header=true] - If true, first line of the csv fine will be a header composed of the first object keys
-     * @returns {String} - return a csv file as a string
-     */
-    static to_csv(j, header=true) {
-        let csv = '';
-        if (j.length > 0) {
-            let keys = Object.keys(j[0]);
-            if (header) {
-                csv += keys.join(',') + "\n";
-            }
-            csv += j.map(function(d) {
-                let a = [];
-                for (const k of keys) {
-                    a.push('"' + d[k] + '"');
-                }
-                return a.join(',');
-            }).join('\n');
-        }
-        return csv.toString();
-    }
-    
-    /**
-     * Split a string in substrings of length of approx. n characters
-     * and splitting on space only. The function will split the string in substring of minimum length 'n'
-     * on spaces inside the string.
-     * @param {string} s string to be split
-     * @param {number} n length of bits to split string 's'
-     * @param {string} [sep="|"] separator to be used to for splitting the string. The character should not be inside the string.
-     * @returns {Array} array of substrings
-     */
-    static splitString(s, n, sep="|") {
-        return s.split('').reduce(
-            (text, letter, index) => {
-                return ((text.split(sep).slice(-1)[0].length > n && letter === " ") ? text.concat(sep) : text.concat(letter)); 
-            },
-            ''
-        ).split(sep);
-    }
-
-    /**
-     * Transform a 'wide' array of Dict to 'long' array, pivoting on some
-     * 'pivot' columns (keys). The long format is a {id, key, value},
-     * where id is one or multiple 'pivot' columns, 'key' are the non pivot columns
-     * of the original array and the value are the value of the corresponding keys.
-     * A category value can also be passed as a new 'column'. 
-     * The long format becomes {id, key, value, category}.
-     * A mapping function can also be passed to be applied to each long element 
-     * (for instance to parse a date)
-     * @param {Array} wideData data to pivot
-     * @param {Array} pivotColumns list of keys on which to pivot from wide to long
-     * @param {string} [keyName="field_id"] name of the key for variable name in the long format. 
-     * @param {string} [valueName="field_value"] name of the key for value in the long format
-     * @param {?string} [category="undefined"] optional category key to be added in the long data 
-     * @param {function(Dict)} mapLongElement optional function to be applied on each long element
-     * @example
-     * wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
-     *              {'date':'2020-07-20','temperature':25,'pressure':1020}];
-     * longArray = wideToLong(wideArray, ['date']);
-     * longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
-     *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1016}
-     *              {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
-     *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}] 
-     */
-    static wideToLong(wideData,
-                      pivotColumns,
-                      keyName='field_id',
-                      valueName='field_value',
-                      category=undefined,
-                      mapLongElement=undefined
-                     ) {
-        let longData = [],
-            columns = Object.keys(wideData[0]),
-            wideColumns = columns.filter( x => !pivotColumns.includes(x));
-        for (const element of wideData) {
-            for (const col of wideColumns) {
-                let longElement = {};
-                longElement[keyName] = col;
-                longElement[valueName] = element[col];
-                for (const col of pivotColumns) {
-                    longElement[col] = element[col];
-                }
-                if (category != undefined) {
-                    longElement['category'] = category;
-                }
-                if (mapLongElement != undefined) {
-                    longElement = mapLongElement(longElement);
-                }
-                longData.push(longElement);
-            }
-        }
-        return longData;
-    }
-    /**
-     * Compute the barycenter between two colors. 
-     * Returned color will be startColor * weight + endColor * (1 - weight)
-     * @param {string} startColor - starting color in rgb / hsl format
-     * @param {string} endColor - ending color in rgb / hsl format
-     * @param {number} weight - weight of the first color
-     * @returns {string} - the barycenter color
-     */
-    static barycenterColor(startColor, endColor, weight) {
-        let repr = startColor.match(/(rgb|rgba|hsl)/)[0];
-        let parseColor = (d) => (d.replace(/( |rgb|rgba|hsl|\(|\))/g,"")
-                                 .split(",")
-                                 .map(d => parseInt(d)));
-        startColor = parseColor(startColor);
-        endColor = parseColor(endColor);
-        let returnColor = startColor.map(
-            (d, i) => weight * d + (1 - weight) * (endColor[i] || 0)
-        );
-        return `${repr}(${returnColor})`;
-    };
-
-    static getBackgroundColor(el, defaultColor = "rgb(255, 255, 255)") {
-        let elBgColor = window.getComputedStyle(el).backgroundColor;
-        while (elBgColor === "rgba(0, 0, 0, 0)" || elBgColor === "transparent") {
-            el = el.parentElement;
-            if (el == null) {
-                return defaultColor;
-            } else {
-                elBgColor = window.getComputedStyle(el).backgroundColor;
-            }
-        }
-        return elBgColor;
-    };
-    
-
-    
-    
     // Drawing methods
     // ===============
     /**
@@ -622,227 +277,113 @@ class Grapher {
         if (options) {
             this.options = options;
         }
-
-        // Adjust width of svg
-        this._svgSetWidth();
-            
         // Clean
         this.g.selectAll('g.x.axis').remove();
         this.g.selectAll('g.y.axis').remove();
         this.g.selectAll('g.yGrid').remove();
         
         // Add axis & grid
-        if (this._options.type == "sparkline") {
-            this._sparkline();
-            this._addTooltip();
-        } else if (this._options.type == "sparklines") {
-            this._sparklines();
-            this._addTooltip();
-        } else {
-            this._addX();
-            if (this._options.type == "bar") {
-                this._addX2();
-            }
-            if (this._options.x.label) {
-                this._addXLabel();
-            }
-            this._addY();
-            if (this._options.y.label) {
-                this._addYLabel();
-            }
+        this._addX();
+        if (this._options.type == "bar") {
+            this._addX2();
+        }
+        if (this._options.x.label) {
+            this._addXLabel();
+        }
+        this._addY();
+        if (this._options.y.label) {
+            this._addYLabel();
+        }
+        
+        if (this._options.grid.y.lines.length > 0) {
+            this._addYGridLines();
+        }
+        if (this._options.grid.x.lines.length > 0) {
+            this._addXGridLines();
+        }
+        
+        // Add content      
+        this._draw();
 
-            if (this._options.grid.y.lines.length > 0) {
-                this._addYGridLines();
-            }
-            if (this._options.grid.x.lines.length > 0) {
-                this._addXGridLines();
-            }
-            
-            // Add content      
-            this._draw();
-
-            
-            // Add tooltip & legend
-            this._addTooltip();
-            if (this._options.legend.show) {
-                this._addLegend();
-            }
-            
+        // Add tooltip & legend
+        this._addTooltip();
+        if (this._options.legend.show) {
+            this._addLegend();
         }
     }
-    /**
-     * Wipe the graph elements created by draw without removing the core elements
-     * so that the graph can be drawn again with .draw()
-     */
-    wipe() {
-        // Remove everything except the overlay
-        this.g.selectAll(':not(.overlay)').remove();
-        this.container.selectAll('.sparkText').remove();
-    }
-    
-    /** 
-     * Download the data associated with the Grapher element
-     *
-     */
-    downloadData() {
-        let domEl = document.createElement('a');
-        domEl.id = "download";
-        domEl.download = this._options.download.filename;
-        domEl.href = URL.createObjectURL(new Blob([Grapher.to_csv(this.data)]));
-        domEl.click();
-    };
+
 
     // Graph internal methods
     // =======================
-    _sparkline() {
-        // Define X-axis
-        this.x = d3.scaleLinear()
-            .range([0, this.svgWidth-2])
-            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
-        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
-        
-        // Define y-axis
-        this.y = d3.scaleLinear()
-            .range([this.svgHeight-4, 0])
-            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale));
-        
-        // Remove existing
-        this.svg.selectAll('g.sparkline').remove();
-
-        // Change svg and g container
-        this.container.attr('style','vertical-align:middle; display:inline-block;');
-        this.g.attr('transform', 'translate(0,2)')
-            .attr('class','sparkline');
-
-
-        // Add range
-        if (this._options.sparkline.range) {
-            let dataRange = this.data.map(d => {d.minRange = this._options.sparkline.range[0]; d.maxRange = this._options.sparkline.range[1]; return d;});
-            this.g.append('path')
-                .datum(dataRange)
-                .attr('fill', this._options.sparkline.rangeFillColor)
-                .attr('stroke','none')
-                .attr('d', d3.area()
-                      .x(d => this.x(d[this._options.x.name]))
-                      .y0(d => this.y(d.minRange))
-                      .y1(d => this.y(d.maxRange)));
-        }
-        
-        // Add sparkline
-        this.sparkLine = this.g.append('path')
-            .datum(this.data)
-            .attr('class', 'sparkLine')
-            .attr('fill', 'none')
-            .attr('stroke-width', this._options.style.strokeWidth)
-            .attr('stroke', this._options.sparkline.lineColor)
-            .attr('d',d3.line()
-                  .curve(d3.curveBasis)
-                  .x(d => this.x(d[this._options.x.name]))
-                  .y(d => this.y(d[this._options.y.name])));
-
-        // Add point and circle for lastPoint
-        this.lastPoint = this.data.slice(-1)[0];
-        this.sparkCircle = this.g.append('circle')
-            .attr('class','sparkCircle')
-            .attr('cx', this.x(this.lastPoint[this._options.x.name]))
-            .attr('cy', this.y(this.lastPoint[this._options.y.name]))
-            .attr('r', 1.5)
-            .attr('fill', this._options.sparkline.circleColor)
-            .attr('stroke', 'none');
-
-        
-        // Text for last point and label
-        this.container.selectAll('.sparkText').remove();
-        if (this._options.sparkline.textLastPoint) {
-            this.sparkTextLastPoint = this.container
-                .append('span')
-                .attr('class','sparkText')
-                .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
-                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this._options.sparkline.textColor}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block;`);
-        }
-        if (this._options.y.label) {
-            this.sparkTextYLabel = this.container
-                .append('span')
-                .attr('class','sparkText')
-                .text(this._options.y.label)
-                .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display:inline-block; padding-left: 0.4rem;`);
-        }       
-    }
-    _sparklines() {
-        // Define X-axis
-        this.x = d3.scaleLinear()
-            .range([0, this.svgWidth-2])
-            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)));
-        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
-        
-        // Define y-axis
-        this.y = d3.scaleLinear()
-            .range([this.svgHeight-4, 0])
-            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale));
-        
-        // Remove existing
-        this.svg.selectAll('g.sparkline').remove();
-
-        // Change svg and g container
-        this.container.attr('style','vertical-align:middle; display:inline-block;');
-        this.g.attr('transform', 'translate(0,2)')
-            .attr('class','sparkline');
-
-        // Add range
-        if (this._options.sparkline.range) {
-            let dataRange = this.data.map(
-                d => { d.minRange = this._options.sparkline.range[0];
-                       d.maxRange = this._options.sparkline.range[1];
-                       return d;}
-            );
-            this.g.append('path')
-                .datum(dataRange)
-                .attr('fill', this._options.sparkline.rangeFillColor)
-                .attr('stroke','none')
-                .attr('d', d3.area()
-                      .x(d => this.x(d[this._options.x.name]))
-                      .y0(d => this.y(d.minRange))
-                      .y1(d => this.y(d.maxRange)));
-        }
-        this.container.selectAll('.sparkText').remove();
-        this._paths = {};
-        this._sparkTextLastPoints = {};
-        this._sparkTextYLabels = {};
-        for (const category of this._options._categories) {
-            let dataFiltered = this.data.filter(
-                d => d[this._options.category.name] === category
-            );
-            this._paths[category] = this.g.append('path')
-                .datum(dataFiltered)
-                .attr('class', 'sparkLine')
-                .attr('fill', 'none')
-                .attr('stroke-width', this._options.style.strokeWidth)
-                .attr('stroke', this.color(category))
-                .attr('d', d3.line()
-                      .curve(d3.curveCatmullRom)
-                      .x(d => this.x(d[this._options.x.name]))
-                      .y(d => this.y(d[this._options.y.name])));
-            this.lastPoint = dataFiltered.slice(-1)[0];
-            this.sparkCircle = this.g.append('circle')
-                .attr('class','sparkCircle')
-                .attr('cx', this.x(this.lastPoint[this._options.x.name]))
-                .attr('cy', this.y(this.lastPoint[this._options.y.name]))
-                .attr('r', 1.5)
-                .attr('fill', this.color(category))
-                .attr('stroke', 'none');
-            if (this._options.sparkline.textLastPoint) {
-                this._sparkTextLastPoints[category] = this.container
-                    .append('span')
-                    .attr('class',`sparkText ${category}`)
-                    .text(this._options.y.tickFormat(this.lastPoint[this._options.y.name]))
-                    .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; color: ${this.color(category)}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; display: none;`);
-                this._sparkTextYLabels[category] = this.container
-                    .append('span')
-                    .attr('class',`sparkText ${category}`)
-                    .text(category)
-                    .attr('style', `font-size:${this._options.sparkline.textFontSize}; font-weight:${this._options.sparkline.textFontWeight}; margin-bottom:${this.svgHeight/2}; vertical-align:middle; padding-left: 0.4rem; display: none;`);
+    _defaultOptions() {
+        return {
+            "data": [],
+            "x": {
+                "name": "x",
+                "scale": "scaleLinear",
+                "tickFormat": d3.format('.3s'),
+                "parse": null,
+                "label": null,
+                "domain": null,
+                "nice": false
+            },
+            "y": {
+                "name": "y",
+                "scale": "scaleLinear",
+                "tickFormat": d3.format('.3s'),
+                "parse": null,
+                "label": null,
+                "domain": null,
+                "nice": true
+            },
+            "category": {
+                "name": null,
+                "parse": d => d
+            },
+            "categories": false,
+            "type": "line",
+            "style": {
+                "colors": colorPalette,
+                "barWidth": 0.8,
+                "strokeWidth": 3,
+                "dotSize": 4,
+                "grid": true,
+                "tooltipColor": this._style.color,
+                "tooltipBackgroundColor": this._style.backgroundColor,
+                "tooltipOpacity": "0.8",
+                "tooltipLineColor": this._style.color,
+                "tooltipFormat": ((d,i) => i === 0 ?
+                                  this._options.x.tickFormat(d) :
+                                  `${this._options.category.parse(d[this._options.category.name])}: ${this._options.y.tickFormat(d[this._options.y.name]) || d3.format('.3s')(d[this._options.y.name])}`),
+                "tooltipDotColor": ((d) => this.color(d[this._options.category.name])),
+                "tooltipDotSize": 5,
+                "beautifyClosestLine": "widen"
+            },
+            "legend": {
+                "show": true,
+                "x": 15, 
+                "y": this._margin.top,
+                "interstice": 25, // distance between dots
+                "backgroundColor": this._style.backgroundColor,
+                "opacity": "0.9"
+            },
+            "download": {
+                "filename": `data_${this.id}_${Date.now()}.csv`
+            },
+            "grid": {
+                "x": {
+                    "show": false,
+                    "lines": []
+                },
+                "y":{
+                    "show": true,
+                    "lines": []
+                }
+            },
+            "advanced": {
+                "additionalColumnsInData": []
             }
-        }
+        };
     }
     _style(element, styleAttr, styleValue) {
         let style = element
@@ -857,7 +398,7 @@ class Grapher {
     }
     _addX() {
         // (i) Find the width
-        this.xValues = Grapher.unique(this.data.map(d => d[this._options.x.name]));
+        this.xValues = unique(this.data.map(d => d[this._options.x.name]));
         this.xNbValues = this.xValues.length;
         this.xWidth = this.innerWidth / this.xNbValues;
         this.xRange = this._options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
@@ -1108,7 +649,7 @@ class Grapher {
                 .attr('x',10)
                 .attr('y',10);
             let textAlert = "WARNING: Graph cannot be plotted because there are too many bars to be displayed compare to the available width.",
-                textAlertA = Grapher.splitString(textAlert,Math.floor(this.innerWidth / this._style.fontSize));
+                textAlertA = splitString(textAlert,Math.floor(this.innerWidth / this._style.fontSize));
             alertBarZeroWidth.selectAll("rect.alert_barzerowidth")
                 .data([null])
                 .join("rect")
@@ -1148,8 +689,9 @@ class Grapher {
             const dots = g.selectAll("circle")
                   .data(data.slice(1))
                   .join("circle")
-                  .style("fill", d => this.isSparkline ? this._options.sparkline["circle-color"] : this.color(d[this._options.category.name]))
-                  .attr("r", this.isSparkline ? 2 : 5)
+            // .style("fill", d => this.isSparkline ? this._options.sparkline["circle-color"] : this.color(d[this._options.category.name]))
+                  .style("fill", d => this._options.style.tooltipDotColor(d))
+                  .attr("r", this._options.style.tooltipDotSize)
                   .attr("cx", (d, i) => this.x(d[this._options.x.name]))
                   .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         }
@@ -1163,68 +705,36 @@ class Grapher {
               .attr("style",`fill:${this._options.style.tooltipBackgroundColor}; fill-opacity: ${this._options.style.tooltipOpacity};`);
 
         // Tooltip text
-        let text;
-        if (! this.isSparkline) {
-            text = g.selectAll("text")
-                .data([null])
-                .join("text")
-                .call(text => text
-                      .selectAll('tspan')
-                      .data(data)
-                      .join("tspan")
-                      .attr("x", 0)
-                      .attr("y", (d, i) => `${i * 1.1}em`)
-                      .attr("class","tooltip_text")
-                      .style("font-weight","bold")
-                      .style("fill",(d, i) => i === 0 ? (typeof this._options.style.tooltipColor == "function" ? this._options.style.tooltipColor() : this._options.style.tooltipColor) : this.color(d[this._options.category.name]))
-                      .text((d,i) => this._options.style.tooltipFormat(d,i)));
-        } else {
-            text = g.selectAll("text")
-                .data([null])
-                .join("text")
-                .call(text => text
-                      .selectAll('tspan')
-                      .data(data.slice(1))
-                      .join("tspan")
-                      .attr("x", 0)
-                      .attr("y", (d, i) => `${i * 1.1}em`)
-                      .attr("class","tooltip_text")
-                      .style("fill",(d, i) => this._options.style.tooltipColor)
-                      .text((d,i) => `${this._options.y.tickFormat(d[this._options.y.name])}`)
-                      .attr('style', `font-size:${this._options.sparkline.textFontSize};`));
-
-        }
+        let text = g.selectAll("text")
+            .data([null])
+            .join("text")
+            .call(text => text
+                  .selectAll('tspan')
+                  .data(data)
+                  .join("tspan")
+                  .attr("x", 0)
+                  .attr("y", (d, i) => `${i * 1.1}em`)
+                  .attr("class","tooltip_text")
+                  .style("font-weight","bold")
+                  .style("fill",(d, i) => i === 0 ? (typeof this._options.style.tooltipColor == "function" ? this._options.style.tooltipColor() : this._options.style.tooltipColor) : this.color(d[this._options.category.name]))
+                  .text((d,i) => this._options.style.tooltipFormat(d,i)));
 
         const {xx, yy, width: w, height: h} = text.node().getBBox();
 
         // Make sure the tooltip is always in the graph area (and visible)
-        if (this.isSparkline) {
-            let text_x = w + mouseX > this.svgWidth ? mouseX - w : mouseX,
-                text_y = mouseY - 5 < 0 ? mouseY + 5 : mouseY + h > this.innerHeight ? this.innerHeight - h : mouseY;
-            text.attr("transform", `translate(${text_x},${text_y})`);
-            
-            // Rectangle around text for tooltip
-            path.attr("x", text_x)
-                .attr("y", text_y - 11)
-                .attr("rx", 5)
-                .attr("width", w )
-                .attr("height", h); 
-        } else {
-            let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
-                text_y = mouseY - 20 < 0 ? mouseY + 20 : mouseY + h - 10 > this.innerHeight ? this.innerHeight - h + 10: mouseY;
-            text.attr("transform", `translate(${text_x},${text_y})`);
-            
-            // Rectangle around text for tooltip
-            path.attr("x", text_x - 5)
-                .attr("y", text_y - 20)
-                .attr("rx", 5)
-                .attr("width", w + 10)
-                .attr("height", h + 10);            
-        }
+        let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
+            text_y = mouseY - 20 < 0 ? mouseY + 20 : mouseY + h - 10 > this.innerHeight ? this.innerHeight - h + 10: mouseY;
+        text.attr("transform", `translate(${text_x},${text_y})`);
         
+        // Rectangle around text for tooltip
+        path.attr("x", text_x - 5)
+            .attr("y", text_y - 20)
+            .attr("rx", 5)
+            .attr("width", w + 10)
+            .attr("height", h + 10);
+
         return true;
     }
-
     _getMouseData(mouseX) {
         let mouseXValue_ = this.x.invert(mouseX), // mouse value projection on X axis
             mouseIndex = d3.bisector(d => d).left(this.xValues, mouseXValue_), // mouse index on X axis
@@ -1242,8 +752,8 @@ class Grapher {
             let closestCategoryAtPoint = null;
             if (mouseData) {
                 closestCategoryAtPoint = mouseData.slice(1).sort(
-                    (a,b) => (Math.abs(a[this._options.y.name]- mouse_y))
-                              -Math.abs(b[this._options.y.name]- mouse_y))[0]
+                    (a, b) => (Math.abs(a[this._options.y.name]- mouse_y))
+                        -Math.abs(b[this._options.y.name]- mouse_y))[0]
                 [this._options.category.name];
             }
             for (const [category, path] of Object.entries(this._paths)) {
@@ -1263,6 +773,42 @@ class Grapher {
             }
         }
     }
+    _beautifyClosestLine(mouseData, mouse_y, beautifyFunction = null) {
+        if (beautifyFunction === "widen" ) {
+            beautifyFunction = this._widenClosestLine;
+        } else if (beautifyFunction === "color") {
+            beautifyFunction = this._colorClosestLine;
+        }
+        if (this.hasOwnProperty('_paths') && beautifyFunction) {
+            let closestCategoryAtPoint = null;
+            if (mouseData) {
+                closestCategoryAtPoint = mouseData.slice(1).sort(
+                    (a, b) => (Math.abs(a[this._options.y.name]- mouse_y))
+                        -Math.abs(b[this._options.y.name]- mouse_y))[0]
+                [this._options.category.name];
+            }
+            for (const [category, path] of Object.entries(this._paths)) {
+                beautifyFunction(this,
+                                 category === closestCategoryAtPoint,
+                                 path,
+                                 category);
+            }
+        }
+    }
+    _widenClosestLine(el, on_off, path, category) {
+        if (on_off) {
+            path.attr('stroke-width', el._options.style.strokeWidth + 1);
+        } else {
+            path.attr('stroke-width', el._options.style.strokeWidth);
+        }
+    }
+    _colorClosestLine(el, on_off, path, category) {
+        if (on_off) {
+            path.attr('stroke', d => el.color(category));
+        } else {
+            path.attr('stroke', d => "#ccc");
+        }
+    }
     _addTooltip() {
         this.g.selectAll("g.tooltip_container").remove();
         this.tooltip = this.g.append("g").attr("class","tooltip_container");
@@ -1273,12 +819,12 @@ class Grapher {
             if (mouse_x > 0) {
                 let mouseData = that._getMouseData(mouse_x);
                 that._buildTooltip(that.tooltip, mouseData, that.x(mouseData[0]), mouse_y);
-                that._widenClosestLine(mouseData, that.y.invert(mouse_y));
+                that._beautifyClosestLine(mouseData, that.y.invert(mouse_y), this._options.style.beautifyClosestLine);
             }
         });
         this.g.on("touchend mouseleave", () => {
             this.tooltip.call(this._buildTooltip, null);
-            this._widenClosestLine(null, null);
+            this._beautifyClosestLine(null, null);
         });
     }
 
@@ -1339,143 +885,6 @@ class Grapher {
         //     nb of characthers of the legend text and nb of keys
         
     }
-    _svgSetWidth() {
-        // this method is used to adjust svg width in case of sparkline
-        // to make sure the label and last value are set inside
-        // the container
-        if (this.isSparkline) {
-            this.sparkTextWidth = 0;
-            if (this._options.sparkline.textLastPoint) {
-                this.lastPoint = this.data.slice(-1)[0];
-                let textLastPoint = this._options.y.tickFormat(this.lastPoint);
-                this.sparkTextWidth += Grapher.getDimensionText(textLastPoint,this._options.sparkline.textFontSize).width;
-            }
-            if (this._options.y.label) {
-                this.sparkTextWidth += Grapher.getDimensionText(this._options.y.label,this._options.sparkline.textFontSize).width + 16*0.4;
-            }
-            // Adjust svg width
-            this.svgWidth = this.width - this.sparkTextWidth;
-            this.svg.attr('width', this.svgWidth);
-        }
-    } 
 }
 
-class Donut {
-    constructor(id, options = {}, size = null) {
-        this.id = id;
-        this.el = document.getElementById(this.id);
-        this.size =  size || Math.min(this.el.offsetWidth, this.el.offsetHeight);
-
-        this._style = {
-            "color": window.getComputedStyle(this.el).color,
-            "foregroundColor": "#1abb9b",
-            "backgroundColor": Grapher.barycenterColor(
-                window.getComputedStyle(this.el).color,
-                Grapher.getBackgroundColor(this.el),
-                0.6),
-            "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
-        };        
-        this.svg = d3.select(`#${this.id}`)
-            .append("svg")
-            .attr("id", this.id + '_svg')
-            .attr('class','gauge')
-            .attr("width", this.size)
-            .attr("height", this.size);
-        
-        this.g = this.svg
-            .append("g")
-            .attr("transform", `translate(${this.size/2},${this.size/2})`);
-        
-        this._options = {
-            "value": 50,
-            "foregroundColor": d => this._style.foregroundColor,
-            "backgroundColor": this._style.backgroundColor,
-            "innerRadius": 0.4*this.size,
-            "outerRadius": this.size/2,
-            "startAngle": -180,
-            "endAngle": 180,
-            "minValue": 0,
-            "maxValue": 100,
-            "displayValue": true,
-            "fontSize": this._style.fontSize,
-            "displayText": d => d,
-            "cornerRadius": 0,
-            "maxHeight": this.size,
-            "padAngle": 0.03
-        };
-        this.options = options;
-
-    }
-    arc() {
-        return d3.arc()
-            .innerRadius(this._options.innerRadius)
-            .outerRadius(this._options.outerRadius)
-            .padAngle(this._options.padAngle)
-            .startAngle(this._deg2rad(this._options.startAngle))
-            .cornerRadius(this._options.cornerRadius);
-    }
-    get options () {
-        return this._options;
-    }
-    set options(opt) {
-        Grapher.updateDict(this._options, opt);
-        this.degree = d3.scaleLinear()
-            .range([this._options.startAngle, this._options.endAngle])
-            .domain([this._options.minValue, this._options.maxValue]);
-        this.el.style.maxHeight = this._options.maxHeight;
-    }
-    _deg2rad(angle) {return angle * Math.PI / 180;}
-    setArcInBound(angle) {
-        if (angle >= this._options.startAngle && angle <= this._options.endAngle) {
-            return angle;
-        } else if (angle <= this._options.startAngle) {
-            return this._options.startAngle;
-        } else {
-            return this._options.endAngle;
-        }
-    }
-    draw(options) {
-        if (options) {
-            this.options = options;
-        }
-        // Draw background
-        this.g.append("path")
-            .datum({endAngle: this._deg2rad(this._options.endAngle)})
-            .attr("class","gauge background")
-            .attr("fill", this._options.backgroundColor)
-            .attr("d", this.arc());
-        
-        // Draw foreground
-        this.g.append("path")
-            .datum({endAngle: this._deg2rad(
-                this.setArcInBound(this.degree(this._options.value))
-            )})
-            .attr("class","gauge foreground")
-            .attr("fill", this._options.foregroundColor(this._options.value))
-            .attr("d", this.arc());
-        // Add current value
-        this.g.append("text")
-            .attr("transform", `translate(0,0)`)
-            .attr("text-anchor", "middle")
-            .style("font-size", this._options.fontSize)
-            .style("fill", this._style.color)
-            .text(this._options.displayText(this._options.value));
-    }
-}
-
-class Gauge extends Donut {
-    constructor(id,
-                options={},
-                size = null) {
-        super(id,
-              options = {},
-              size);
-        this.options = {
-            "maxHeight": this.size / 2 + "px",
-            "cornerRadius": this.size / 10,
-            "startAngle": -90,
-            "endAngle": 90,
-            "padAngle": 0
-        };
-    }
-}
+export { Chart };

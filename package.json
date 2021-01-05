@@ -1,16 +1,35 @@
 {
     "name": "Grapher",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "description": "A minimal wrapper around D3.js to do line and bar plots.",
-    "main": "grapher.js",
     "author": "Louis de Charsonville",
     "license": "MIT",
     "dependencies": {
-        "d3": "^6.0",
+        "d3": "^6.0"
+    },
+    "devDependencies": {
+        "@rollup/plugin-json": "^4.1.0",
         "documentation": "^12.3.0",
         "documentation-theme-light": "^1.1.1",
         "github-slugger": "^1.3.0",
+        "rollup": "^2.36.0",
+        "rollup-plugin-terser": "^7.0.2",
         "vinyl": "^2.2.0",
         "vinyl-fs": "^3.0.3"
-    }
+    },
+    "files": [
+        "src",
+        "dist",
+        "index.js"
+    ],
+    "scripts": {
+        "build": "rollup -c rollup.config.js",
+        "doc": "bash ./scripts/build_docs.sh"
+    },
+    "source": "index.js",
+    "main": "dist/grapher.js",
+    "module": "dist/grapher.mjs",
+    "umd:main": "dist/grapher.min.js",
+    "browser": "dist/grapher.min.js",
+    "unpkg": "dist/grapher.min.js"
 }

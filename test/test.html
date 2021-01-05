@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"> 
+        <style>
+         body {
+             /* background-color: rgb(74, 74, 74);
+                color: rgb(255, 255, 255); */
+             margin: 5%;
+         }
+         .overlay {
+             fill: none;
+             pointer-events: all;
+         }
+         #myPlot {
+             width: 1000px;
+             height: 500px;
+             border: 1px solid #ccc;
+         }
+         button {
+             margin-top: 10px;
+             margin-bottom: 10px;
+         }
+         #myPlot .grapher .y-grid {
+             stroke: magenta !important;
+         }
+         #myPlot .grapher .y.axis .tick text {
+             fill: green !important;
+         }
+         #myPlot .grapher .y.axis .domain {
+             stroke: green;
+         }
+         #myPlot .grapher .y.axis line {
+             stroke: green;
+         }
+         #myPlot .grapher .x.axis .tick text {
+             fill: red !important;
+             font-size: 10px;
+         }
+         #myPlot .grapher .x.axis .domain {
+             stroke: red;
+         }
+         #myPlot .grapher .x.axis line {
+             stroke: red;
+         }
+         #myPlot .grapher .axisLabel {
+             fill: purple !important;
+         }
+         #myPlot .grapher text.allez-les-bleus {
+             fill: blue !important;
+             font-weight: 800;
+         }
+         #myPlot .grapher line.allez-les-bleus {
+             stroke: blue;
+             stroke-width: 3px;
+         }
+         .gauge-header {
+             font-size: 0.8rem;
+             font-weight: 700;
+             text-transform: uppercase;
+             text-align: center;
+         }
+
+         /* #tempGraphHLines .grid-line-label {
+            fill: blue;
+            } */
+        </style>
+    </head>
+    <body id="main">
+
+        <h2>My Graph</h2>
+        <button onclick="switchBarLine()">Switch bar / lines</button>
+        <button onclick="sliceData()">Slice data</button>
+        <button onclick="downloadData()">Download data</button>
+        <button onclick="removeLabels(this)">Remove labels</button>
+        <button onclick="switchCategory()">Switch category</button>
+        <button onclick="renameData()">Rename categories</button>
+        <div id="myPlot"></div>
+
+        <hr/>
+        <h2>Edward Tufte's sparkline</h2>
+        <button onclick="filterDataSpark()">Filter data for sparkline</button>
+        <button onclick="wipeMySparkline()">Wipe sparkline</button>
+        <div id="mySparkline"></div>
+        <div><strong>Sparkline without label</strong></div>
+        <button onclick="addLabelSpark(true)">Add a label</button><button onclick="addLabelSpark(false)">Remove label</button>
+        <div id="mySparkline2"></div>
+        
+
+        <hr/>
+        <h2>No Category</h2>
+        <div id="plotNoCategory"></div>
+
+        <hr/>
+        <h2>Gauge</h2>
+        <div style="width: 200px;">
+            <div id="myGauge"></div>
+            <p class="gauge-header">Example of a Gauge</p>
+        </div>
+
+        <h2>Arc</h2>
+        <div style="width: 200px;">
+            <div id="myArc"></div>
+        </div>
+
+        <hr/>
+        <h2>Examples</h2>
+
+        <h3>Simple plot with temperature data</h3>
+        <div id="tempGraph"></div>
+        
+        <h3>Rename the labels</h3>
+        <div id="tempGraphRename"></div>
+        <hr/>
+
+        <h3>Horizontal lines</h3>
+        <div id="tempGraphHLines"></div>
+        <hr/>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.3.1/d3.min.js" integrity="sha512-9H86d5lhAwgf2/u29K4N5G6pZThNOojI8kMT4nT4NHvVR02cM85M06KJRQXkI0XgQWBpzQyIyr8LVomyu1AQdw==" crossorigin="anonymous"></script>
+        <script src="../dist/grapher.debug.js"></script>
+        <script>
+         data = [{"value":3,"Country/Region":"France","date":"2020-01-21T23:00:00.000Z"},
+                 {"value":1,"Country/Region":"France","date":"2020-01-22T23:00:00.000Z"},
+                 {"value":4,"Country/Region":"France","date":"2020-01-23T23:00:00.000Z"},
+                 {"value":7,"Country/Region":"France","date":"2020-01-24T23:00:00.000Z"},
+                 {"value":-3,"Country/Region":"Italy","date":"2020-01-21T23:00:00.000Z"},
+                 {"value":3,"Country/Region":"Italy","date":"2020-01-22T23:00:00.000Z"},
+                 {"value":4,"Country/Region":"Italy","date":"2020-01-23T23:00:00.000Z"},
+                 {"value":10,"Country/Region":"Italy","date":"2020-01-24T23:00:00.000Z"}];
+
+         dataSpark = [{'date': '2020-01-01', 'value': 170}, {'date': '2020-01-02', 'value': 134}, {'date': '2020-01-03', 'value': 115}, {'date': '2020-01-04', 'value': 128}, {'date': '2020-01-05', 'value': 168}, {'date': '2020-01-06', 'value': 166}, {'date': '2020-01-07', 'value': 122}, {'date': '2020-01-08', 'value': 81}, {'date': '2020-01-09', 'value': 56}, {'date': '2020-01-10', 'value': 39}, {'date': '2020-01-11', 'value': 97}, {'date': '2020-01-12', 'value': 114}, {'date': '2020-01-13', 'value': 114}, {'date': '2020-01-14', 'value': 130}, {'date': '2020-01-15', 'value': 151}, {'date': '2020-01-16', 'value': 184}, {'date': '2020-01-17', 'value': 148}, {'date': '2020-01-18', 'value': 145}, {'date': '2020-01-19', 'value': 134}, {'date': '2020-01-20', 'value': 145}, {'date': '2020-01-21', 'value': 145}, {'date': '2020-01-22', 'value': 145}, {'date': '2020-01-23', 'value': 143}, {'date': '2020-01-24', 'value': 148}, {'date': '2020-01-25', 'value': 224}, {'date': '2020-01-26', 'value': 181}, {'date': '2020-01-27', 'value': 112}, {'date': '2020-02-01', 'value': 111}, {'date': '2020-02-02', 'value': 129}, {'date': '2020-02-03', 'value': 151}, {'date': '2020-02-04', 'value': 131}, {'date': '2020-02-05', 'value': 131}, {'date': '2020-02-06', 'value': 131}, {'date': '2020-02-07', 'value': 114}, {'date': '2020-02-08', 'value': 112}, {'date': '2020-02-09', 'value': 112}, {'date': '2020-02-10', 'value': 112}, {'date': '2020-02-11', 'value': 124}, {'date': '2020-02-12', 'value': 187}, {'date': '2020-02-13', 'value': 202}, {'date': '2020-02-14', 'value': 200}, {'date': '2020-02-15', 'value': 203}, {'date': '2020-02-16', 'value': 237}, {'date': '2020-02-17', 'value': 263}, {'date': '2020-02-18', 'value': 221}, {'date': '2020-02-19', 'value': 197}, {'date': '2020-02-20', 'value': 184}, {'date': '2020-02-21', 'value': 185}, {'date': '2020-02-22', 'value': 203}, {'date': '2020-02-23', 'value': 290}, {'date': '2020-02-24', 'value': 330}, {'date': '2020-02-25', 'value': 330}, {'date': '2020-02-26', 'value': 226}, {'date': '2020-02-27', 'value': 113}, {'date': '2020-03-01', 'value': 148}, {'date': '2020-03-02', 'value': 169}, {'date': '2020-03-03', 'value': 148}, {'date': '2020-03-04', 'value': 78}, {'date': '2020-03-05', 'value': 96}, {'date': '2020-03-06', 'value': 96}, {'date': '2020-03-07', 'value': 96}, {'date': '2020-03-08', 'value': 77}, {'date': '2020-03-09', 'value': 59}, {'date': '2020-03-10', 'value': 22}, {'date': '2020-03-11', 'value': 22}, {'date': '2020-03-12', 'value': 70}, {'date': '2020-03-13', 'value': 110}, {'date': '2020-03-14', 'value': 128}]
+
+         let options = {
+             "data": data,
+             "x": {
+                 "name":"date",
+                 "scale": "scaleTime",
+                 "tickFormat": d3.timeFormat("%d/%m/%y"),
+                 "parse": (d) => new Date(d),
+                 "label": "Date"
+             },
+             "y": {
+                 "name": "value",
+                 "scale": "scaleLinear",
+                 "tickFormat": d3.format('.3s'),
+                 "domain": [-5, 10],
+                 "label": "Value"
+             },
+             "category": {
+                 "name":"Country/Region"
+             },
+             "categories": ["France"],
+             "type": "line",
+             "grid": {
+                 "y": {
+                     "lines": [
+                         {"y": 1, "label":"this is a test", "position":"end"}
+                     ]
+                 },
+                 "x": {
+                     "lines": [
+                         {"x": new Date("2020-01-22T23:00:00.000Z"), "y":"-4", "textAnchor":"start", "label":"Allez les bleus", "class":"allez-les-bleus"}
+                     ]
+                 }
+             }
+         }
+         let myGraph = new g.Grapher("myPlot", "line", options);
+         myGraph.draw();
+
+         function switchBarLine() {
+             if (myGraph.options.type == "bar") {
+                 myGraph.draw({"type":"dotted-line"});
+             } else {
+                 myGraph.draw({"type":"bar"})
+             }
+         }
+         function sliceData() {
+             data = data.slice(1);
+             myGraph.draw({"data":data});
+         }
+         function downloadData() {
+             myGraph.downloadData();
+         }
+         function removeLabels(el) {
+             let isRemove = el.textContent == "Remove labels" ;
+             el.textContent = isRemove ? "Add labels" : "Remove labels";
+             myGraph.options = isRemove ? {"x":{"label":null}, "y":{"label":null}} : {"x": {"label": options.x.label}, "y": {"label": options.y.label}};
+             myGraph.draw();
+         }
+         function switchCategory() {
+             let currentCategories = myGraph.options.categories,
+                 categories = g.unique(myGraph.options.data.map(d => d['Country/Region']));
+             if (currentCategories.toString() != categories.toString()) {
+                 myGraph.options = {"categories": categories};
+                 myGraph.draw();
+             } else {
+                 let odds = (new Date).getTime() % 2 == 0 ? [1] : [0,1];
+                 myGraph.draw({"categories": categories.slice(...odds)});
+             }
+         }
+         function filterDataSpark() {
+             // Create a random filtering to update the sparkline
+             let index = Math.floor(Math.random() * dataSpark.length)
+             let new_data = dataSpark.filter(d => d.value > dataSpark[index].value)
+             mySparkline.draw({"data": new_data});
+         }
+         function addLabelSpark(isLabel) {
+             if (isLabel) {
+                 mySparkline2.draw({"y":{"label":"A long label"}});
+             } else {
+                 mySparkline2.draw({"y":{"label": false}});
+             }
+         }
+         function wipeMySparkline() {
+             mySparkline.wipe();
+         }
+         function renameData() {
+             let rename_ = {
+                 "France": "République Française",
+                 "Italy": "Italie"
+             };
+             myGraph.draw({
+                 "category": {"parse": (d) => rename_[d]},
+                 "style": {
+                     "beautifyClosestLine": "color"
+                 }
+             });
+         }
+         // ================================================================= //
+
+         let mySparkline = new g.Grapher("mySparkline",
+         "sparkline",
+                                       {"data": dataSpark,
+                                       "x": {
+                                       "name": "date",
+                                       "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                        },
+                                       "y": {
+                                       "name": "value",
+                                       "tickFormat": d3.format('.3s'),
+                                       "label": "Glucose"
+                                        },
+                                       "type": "sparkline",
+                                       "sparkline": {
+                                       "range": [82, 180]
+                                        }
+                                       },
+                                       200,
+                                       25
+         );
+         mySparkline.draw();
+         let mySparkline2 = new g.Grapher("mySparkline2",
+         "sparkline",
+                                          {"data": dataSpark,
+                                          "x": {
+                                          "name": "date",
+                                          "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                           },
+                                          "y": {
+                                          "name": "value",
+                                          "tickFormat": d3.format('.3s'),
+                                           },
+                                          "type": "sparkline",
+                                          "sparkline": {
+                                          "range": [82, 180]
+                                           }
+                                          },
+                                          200,
+                                          25
+         );
+         mySparkline2.draw();
+
+         let plotNoCategory = new g.Grapher("plotNoCategory",
+         "line",
+                                            {"data": dataSpark,
+                                            "x": {
+                                            "name": "date",
+                                            "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                            "tickFormat": d3.timeFormat("%d/%m/%y")
+                                             },
+                                            "y": {
+                                            "name": "value",
+                                            "tickFormat": d3.format('.3s'),
+                                            "label": "Glucose"
+                                             },
+                                            "type": "dotted-line"
+                                            },
+                                            1000,
+                                            400
+         );
+         plotNoCategory.draw();
+
+         // Test to transfer data from wide to long
+         let wideData = [{'date':'2020-01-12','PARIS':'12','FRANKFURT':'10'},
+                         {'date':'2020-01-13','PARIS':'9','FRANKFURT':'3'},
+                         {'date':'2020-01-14','PARIS':'5','FRANKFURT':'-1'}];
+         let longData = g.wideToLong(wideData,
+                                     ['date'],
+                                     'city',
+                                     'temperature',
+                                     'european_city',
+                                     function (x) {x['date'] = d3.timeParse('%Y-%m-%d')(x['date']); return x});
+
+         // Test updateDict
+         let aDict = {
+                                            "hello": "bonjour",
+                                            "true": "vraie",
+         };
+         let anotherDict = {
+                                            "true": "vrai",
+                                            "hi": "salut"
+         };
+         console.log(aDict);
+         g.updateDict(aDict, anotherDict);
+         console.log(aDict);
+         g.updateDict(aDict, anotherDict, true);
+         console.log(aDict);
+
+         let myGauge = new g.Gauge("myGauge",
+                                   {},
+                                   document.getElementById("myGauge").parentElement.offsetWidth);
+         myGauge.draw();
+         let myArc = new g.Donut("myArc",
+                                 {},
+                                 document.getElementById("myArc").parentElement.offsetWidth);
+                     myArc.draw();
+         
+        </script>
+        
+        <!-- <script src="./test.js"></script> -->
+    </body>
+</html>
