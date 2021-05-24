@@ -124,6 +124,9 @@
                  {"value":1,"Country/Region":"France","date":"2020-01-22T23:00:00.000Z"},
                  {"value":4,"Country/Region":"France","date":"2020-01-23T23:00:00.000Z"},
                  {"value":7,"Country/Region":"France","date":"2020-01-24T23:00:00.000Z"},
+                 {"value":0,"Country/Region":"France","date":"2020-01-25T23:00:00.000Z"},
+                 {"value":0,"Country/Region":"France","date":"2020-01-26T23:00:00.000Z"},
+                 {"value":6,"Country/Region":"France","date":"2020-01-27T23:00:00.000Z"},
                  {"value":-3,"Country/Region":"Italy","date":"2020-01-21T23:00:00.000Z"},
                  {"value":3,"Country/Region":"Italy","date":"2020-01-22T23:00:00.000Z"},
                  {"value":4,"Country/Region":"Italy","date":"2020-01-23T23:00:00.000Z"},
@@ -230,40 +233,40 @@
          // ================================================================= //
 
          let mySparkline = new g.Grapher("mySparkline",
-         "sparkline",
-                                       {"data": dataSpark,
-                                       "x": {
-                                       "name": "date",
-                                       "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
-                                        },
-                                       "y": {
-                                       "name": "value",
-                                       "tickFormat": d3.format('.3s'),
-                                       "label": "Glucose"
-                                        },
-                                       "type": "sparkline",
-                                       "sparkline": {
-                                       "range": [82, 180]
-                                        }
-                                       },
-                                       200,
-                                       25
+                                         "sparkline",
+                                         {"data": dataSpark,
+                                          "x": {
+                                              "name": "date",
+                                              "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                          },
+                                          "y": {
+                                              "name": "value",
+                                              "tickFormat": d3.format('.3s'),
+                                              "label": "Glucose"
+                                          },
+                                          "type": "sparkline",
+                                          "sparkline": {
+                                              "range": [82, 180]
+                                          }
+                                         },
+                                         200,
+                                         25
          );
          mySparkline.draw();
          let mySparkline2 = new g.Grapher("mySparkline2",
-         "sparkline",
+                                          "sparkline",
                                           {"data": dataSpark,
-                                          "x": {
-                                          "name": "date",
-                                          "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                           "x": {
+                                               "name": "date",
+                                               "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
                                            },
-                                          "y": {
-                                          "name": "value",
-                                          "tickFormat": d3.format('.3s'),
+                                           "y": {
+                                               "name": "value",
+                                               "tickFormat": d3.format('.3s'),
                                            },
-                                          "type": "sparkline",
-                                          "sparkline": {
-                                          "range": [82, 180]
+                                           "type": "sparkline",
+                                           "sparkline": {
+                                               "range": [82, 180]
                                            }
                                           },
                                           200,
@@ -272,19 +275,19 @@
          mySparkline2.draw();
 
          let plotNoCategory = new g.Grapher("plotNoCategory",
-         "line",
+                                            "line",
                                             {"data": dataSpark,
-                                            "x": {
-                                            "name": "date",
-                                            "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
-                                            "tickFormat": d3.timeFormat("%d/%m/%y")
+                                             "x": {
+                                                 "name": "date",
+                                                 "parse": (d) => d3.timeParse('%Y-%m-%d')(d),
+                                                 "tickFormat": d3.timeFormat("%d/%m/%y")
                                              },
-                                            "y": {
-                                            "name": "value",
-                                            "tickFormat": d3.format('.3s'),
-                                            "label": "Glucose"
+                                             "y": {
+                                                 "name": "value",
+                                                 "tickFormat": d3.format('.3s'),
+                                                 "label": "Glucose"
                                              },
-                                            "type": "dotted-line"
+                                             "type": "dotted-line"
                                             },
                                             1000,
                                             400
@@ -304,12 +307,12 @@
 
          // Test updateDict
          let aDict = {
-                                            "hello": "bonjour",
-                                            "true": "vraie",
+             "hello": "bonjour",
+             "true": "vraie",
          };
          let anotherDict = {
-                                            "true": "vrai",
-                                            "hi": "salut"
+             "true": "vrai",
+             "hi": "salut"
          };
          console.log(aDict);
          g.updateDict(aDict, anotherDict);
@@ -323,9 +326,15 @@
          myGauge.draw();
          let myArc = new g.Donut("myArc",
                                  {},
+                                 document.getElementById("myArc").parentElement.offsetWidth*2,
                                  document.getElementById("myArc").parentElement.offsetWidth);
-                     myArc.draw();
-         
+
+         let arcData = [
+             {"name": "Product A", "value": 10},
+             {"name": "Product B", "value": 25},
+             {"name": "Product C", "value": 50}
+         ];
+         myArc.draw({"data": arcData});
         </script>
         
         <!-- <script src="./test.js"></script> -->

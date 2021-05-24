@@ -264,7 +264,7 @@ class GrapherBase {
         this.svg = this.container
             .append("svg")
             .attr("id", this.id + '_svg')
-            .attr('class','grapher')
+            .attr('class',`grapher ${type}`)
             .attr("width", this.svgWidth)
             .attr("height", this.svgHeight);
 
@@ -906,7 +906,7 @@ class Chart extends GrapherBase {
                     .attr('stroke-width', this._options.style.strokeWidth)
                     .attr('d', d3.line()
                           .y(d => this.y(d[this._options.y.name]))
-                          .defined(d => d[this._options.y.name])
+                          .defined(d => d[this._options.y.name] !== null)
                           .x(d => this.x(d[this._options.x.name])));
             }            if (this._options.type == "bar") {
                 if (this.x2.bandwidth() > 0) {
@@ -1517,49 +1517,207 @@ class Sparkline extends Chart {
 * myArc.draw();
 */
 
+
 class Donut extends GrapherBase {
-    constructor(id,  options = {}, size = null, type = "donut") {
-        let el = document.getElementById(id);
-        size =  size || Math.min(el.offsetWidth, el.offsetHeight);
-        super(id, type, size, size);
-        this.size = size;
-        updateDict(this._style,
-                   {"foregroundColor": "#1abb9b",
-                    "backgroundColor": barycenterColor(
-                        window.getComputedStyle(this.el).color,
-                           getBackgroundColor(this.el),
-                        0.6)});
+    constructor(id,  options = {}, width = null, height = null, type = "donut") {
+        super(id, type, width, height);
+        // Define size and radius
+        this.size = this._size();
+        this.radius = this._radius();
+
+        // Create a <g> subelement inside svg.
+        this._create_g();
         
+        // Pass default options
+        this._options = this._defaultOptions(); 
+        this.options = options;
+    }
+    _size() {
+        return Math.min(this.width, this.height);
+    }
+    _radius() {
+        return this.size * 0.48 ;
+    }
+    _create_g() {
         this.g = this.svg
             .append("g")
             .attr("transform", `translate(${this.size/2},${this.size/2})`);
-        
-        this._options = {
-            "value": 50,
-            "foregroundColor": d => this._style.foregroundColor,
-            "backgroundColor": this._style.backgroundColor,
-            "innerRadius": 0.4*this.size,
-            "outerRadius": this.size/2,
-            "startAngle": -180,
-            "endAngle": 180,
-            "minValue": 0,
-            "maxValue": 100,
-            "displayValue": true,
-            "fontSize": this._style.fontSize,
-            "displayText": d => d,
-            "cornerRadius": 0,
-            "maxHeight": this.size,
-            "padAngle": 0.03
-        };
-        this.options = options;
     }
-    arc() {
-        return d3.arc()
-            .innerRadius(this._options.innerRadius)
-            .outerRadius(this._options.outerRadius)
-            .padAngle(this._options.padAngle)
-            .startAngle(this._deg2rad(this._options.startAngle))
-            .cornerRadius(this._options.cornerRadius);
+    _defaultOptions() {
+        return {
+            "data": [],
+            "value": {
+                "name": "value",
+                "format": d => d[this._options.value.name],
+                "displayPercentage": false
+            },
+            "label": {
+                "name": "name",
+                "format": d => d[this._options.label.name],
+            },
+            "style": {
+                "colors": colorPalette,
+                "innerRadius": 0.8 * this.radius,
+                "outerRadius": 0.4 * this.radius,
+                "outerArcRadius": 0.9 * this.radius,
+                "padAngle": 0.03,
+                "centerText": {
+                    "display": true,
+                    "format": d => this._options.data
+                        .map(d => d[this._options.value.name])
+                        .reduce((a, b) => a + b, 0),
+                    "fontSize": this._style.fontSize,
+                },
+                "labels": {
+                    "display": true,
+                    "fontSize": this._style.fontSize * 0.8
+                },
+                "labelLines": {
+                    "display": true,
+                    "color": this._style.color
+                },
+                "cornerRadius": 0,
+                "startAngle": -180,
+                "endAngle": 180,
+                "minValue": 0,
+                "maxValue": 100,
+                "maxHeight": this.size,
+            }
+        };
+    }
+    /**
+     * Return a d3 scale for colors
+     */    
+    _draw() {
+        
+        this.g.attr("transform", `translate(${this.size}, ${this.size/2})`);
+
+        this.pieData = d3.pie()
+            .value(d => d[this._options.value.name])(this._options.data);
+
+        this._color = d3.scaleOrdinal(this._options.style.colors);
+        
+        this.outerArc = d3.arc()
+            .innerRadius(this._options.style.outerArcRadius)
+            .outerRadius(this._options.style.outerArcRadius);
+
+        this.arc = d3.arc()
+            .innerRadius(this._options.style.innerRadius)
+            .outerRadius(this._options.style.outerRadius)
+            .padAngle(this._options.style.padAngle)
+            .cornerRadius(this._options.style.cornerRadius);
+        
+        // Add arcs
+        this.arcs = this.g.selectAll('.arc')
+            .data(this.pieData)
+            .enter()
+            .append('g')
+            .attr('class','arc')
+            .append('path')
+            .attr('d', this.arc)
+            .attr('fill', (d, i) => this._color(i));
+        this.arcs.exit().remove();
+
+        // Add labels
+        if (this._options.style.labels.display) {
+            this._labels();
+        }
+
+        // Add labels lines
+        if (this._options.style.labelLines.display) {
+            this._labelLines();
+        }
+
+        // Add center text lines
+        if (this._options.style.centerText.display) {
+            this._addCenterValue();
+        }
+    }
+    // _posText(pieData, paddingVertical=0, paddingHorizontal=0) {
+    //     let pos = this.outerArc.centroid(pieData);
+    //     let sign = this._midAngle(pieData) < Math.PI ? 1 : -1;
+    //     // Update position
+    //     pos[0] = (this.radius + paddingHorizontal) * sign;
+    //     pos[1] = pos[1] + paddingVertical;
+    //     return pos;
+    // }
+    _posText(pieData, isValue=false) {
+        let pos = this.outerArc.centroid(pieData);
+        let sign = this._midAngle(pieData) < Math.PI ? 1 : -1;
+        let sizeLabel = getDimensionText(this._options.label.format(pieData.data),
+                                         this._options.fontSizeLabels);
+        let sizeValue = getDimensionText(this._options.value.format(pieData.data),
+                                         this._options.fontSizeLabels);
+        let paddingHorizontal;
+        if (isValue) {
+            paddingHorizontal = sizeValue.width > sizeLabel.width ? 0 : sizeLabel.width - sizeValue.width;
+        } else {
+            paddingHorizontal = sizeLabel.width > sizeValue.width ? 0 : sizeValue.width - sizeLabel.width;
+        }
+        // Update position
+        pos[0] = (this.radius + paddingHorizontal) * sign;
+        pos[1] = isValue ? pos[1] + sizeValue.height : pos[1] - 0.4 * sizeLabel.height;
+        return pos;
+    }
+    _posEndLabelLines(pieData) {
+        let pos = this.outerArc.centroid(pieData);
+        let sign = this._midAngle(pieData) < Math.PI ? 1 : -1;
+        let lengthText = getDimensionText(this._options.label.format(pieData.data),
+                                          this._options.fontSizeLabels);
+        pos[0] = (this.radius + lengthText.width) * sign;
+        return pos;
+    }
+    _midAngle(pieData) {
+        return (pieData.startAngle + (pieData.endAngle + pieData.startAngle) / 2);
+    }
+    _labels() {
+        // Add label name
+        this.labelsName =  this.g.selectAll("text.labelName")
+            .data(this.pieData);
+        this.labelsName.enter()
+            .append("text")
+            .attr("class", "labelName")
+            .attr("dy", this._options.fontSizeLabels)
+            .text(d => `${this._options.label.format(d.data)}`)
+            .attr("transform", d => `translate(${this._posText(d)})`)
+            .attr("text-anchor", d => this._midAngle(d) < Math.PI ? "start" : "end");
+        this.labelsName.exit().remove();
+
+        // Add label value
+        this.labelsValue =  this.g.selectAll("text.labelValue")
+            .data(this.pieData);
+        this.labelsValue.enter()
+            .append("text")
+            .attr("dy", this._options.fontSizeLabels)
+            .attr("class", "labelValue")
+            .text(d => `${this._options.value.format(d.data)}`)
+            .attr("transform", d => `translate(${this._posText(d, true)})`)
+            .attr("text-anchor", d => this._midAngle(d) < Math.PI ? "start" : "end");
+        this.labelsValue.exit().remove();
+
+    }
+    _labelLines() {
+        // Add labelsline
+        this.labelLines = this.g.selectAll("polyline.labelLines")
+            .data(this.pieData);
+        this.labelLines.enter()
+            .append("polyline")
+            .attr('class', 'labelLines')
+            .attr("points", d => [this.arc.centroid(d),
+                                  this.outerArc.centroid(d),
+                                  this._posEndLabelLines(d)])
+            .attr("fill", "none")
+            .attr("stroke", this._options.style.labelLines.color);
+        this.labelLines.exit().remove();
+    }
+    _addCenterValue() {
+        // Add current value
+        this.g.append("text")
+            .attr("transform", `translate(0,0)`)
+            .attr("text-anchor", "middle")
+            .style("font-size", this._options.style.centerText.fontSize)
+            .style("fill", this._style.color)
+            .text(this._options.style.centerText.format);
     }
     get options () {
         return this._options;
@@ -1569,9 +1727,11 @@ class Donut extends GrapherBase {
         this.degree = d3.scaleLinear()
             .range([this._options.startAngle, this._options.endAngle])
             .domain([this._options.minValue, this._options.maxValue]);
-        this.el.style.maxHeight = this._options.maxHeight;
+        this.el.style.maxHeight = this._options.style.maxHeight;
     }
+
     _deg2rad(angle) {return angle * Math.PI / 180;}
+    
     setArcInBound(angle) {
         if (angle >= this._options.startAngle && angle <= this._options.endAngle) {
             return angle;
@@ -1585,29 +1745,7 @@ class Donut extends GrapherBase {
         if (options) {
             this.options = options;
         }
-        // Draw background
-        this.g.append("path")
-            .datum({endAngle: this._deg2rad(this._options.endAngle)})
-            .attr("class","gauge background")
-            .attr("fill", this._options.backgroundColor)
-            .attr("d", this.arc());
-        
-        // Draw foreground
-        this.g.append("path")
-            .datum({endAngle: this._deg2rad(
-                this.setArcInBound(this.degree(this._options.value))
-            )})
-            .attr("class","gauge foreground")
-            .attr("fill", this._options.foregroundColor(this._options.value))
-            .attr("d", this.arc());
-        
-        // Add current value
-        this.g.append("text")
-            .attr("transform", `translate(0,0)`)
-            .attr("text-anchor", "middle")
-            .style("font-size", this._options.fontSize)
-            .style("fill", this._style.color)
-            .text(this._options.displayText(this._options.value));
+        this._draw();
     }
 }
 
@@ -1627,18 +1765,102 @@ class Donut extends GrapherBase {
 * myGauge.draw();
 * 
 */
-class Gauge extends Donut {
+class Gauge extends GrapherBase {
     constructor(id,
                 options={},
                 size = null) {
-        super(id, options, size, "gauge");
-        this.options = {
-            "maxHeight": this.size / 2 + "px",
-            "cornerRadius": this.size / 10,
+        let el = document.getElementById(id);
+        size =  size || Math.min(el.offsetWidth, el.offsetHeight);
+
+        super(id, options, size, size, "gauge");
+                updateDict(this._style,
+                   {"foregroundColor": "#1abb9b",
+                    "backgroundColor": barycenterColor(
+                        window.getComputedStyle(this.el).color,
+                           getBackgroundColor(this.el),
+                        0.6)});
+
+        this.size = size;
+        
+        this.g = this.svg
+            .append("g")
+            .attr("transform", `translate(${this.size/2},${this.size/2})`);
+        this._options = {
+            "value": 50,
+            "foregroundColor": d => this._style.foregroundColor,
+            "backgroundColor": this._style.backgroundColor,
+            "innerRadius": 0.4*this.size,
+            "outerRadius": this.size/2,
             "startAngle": -90,
             "endAngle": 90,
-            "padAngle": 0
+            "minValue": 0,
+            "maxValue": 100,
+            "displayValue": true,
+            "fontSize": this._style.fontSize,
+            "displayText": d => d,
+            "cornerRadius": this.size / 10,
+            "maxHeight": this.size / 2 + "px",
+            "padAngle": 0.0
         };
+        this.options = options;
+    }
+    _arc() {
+        return d3.arc()
+            .innerRadius(this._options.innerRadius)
+            .outerRadius(this._options.outerRadius)
+            .padAngle(this._options.padAngle)
+            .startAngle(this._deg2rad(this._options.startAngle))
+            .cornerRadius(this._options.cornerRadius);
+    }
+    get options () {
+        return this._options;
+    }
+    set options(opt) {
+        updateDict(this._options, opt);
+        this.degree = d3.scaleLinear()
+            .range([this._options.startAngle, this._options.endAngle])
+            .domain([this._options.minValue, this._options.maxValue]);
+        this.el.style.maxHeight = this._options.maxHeight;
+    }
+
+    _deg2rad(angle) {return angle * Math.PI / 180;}
+    
+    setArcInBound(angle) {
+        if (angle >= this._options.startAngle && angle <= this._options.endAngle) {
+            return angle;
+        } else if (angle <= this._options.startAngle) {
+            return this._options.startAngle;
+        } else {
+            return this._options.endAngle;
+        }
+    }
+    draw(options) {
+        if (options) {
+            this.options = options;
+        }
+        // Draw background
+        this.g.append("path")
+            .datum({endAngle: this._deg2rad(this._options.endAngle)})
+            .attr("class","gauge background")
+            .attr("fill", this._options.backgroundColor)
+            .attr("d", this._arc());
+        
+        // Draw foreground
+        this.g.append("path")
+            .datum({endAngle: this._deg2rad(
+                this.setArcInBound(this.degree(this._options.value))
+            )})
+            .attr("class","gauge foreground")
+            .attr("fill", this._options.foregroundColor(this._options.value))
+            .attr("d", this._arc());
+        
+        // Add current value
+        this.g.append("text")
+            .attr("transform", `translate(0,0)`)
+            .attr("text-anchor", "middle")
+            .style("font-size", this._options.fontSize)
+            .style("fill", this._style.color)
+            .text(this._options.displayText(this._options.value));
     }
 }
 

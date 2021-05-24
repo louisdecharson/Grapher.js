@@ -604,7 +604,7 @@ class Chart extends GrapherBase {
                     .attr('stroke-width', this._options.style.strokeWidth)
                     .attr('d', d3.line()
                           .y(d => this.y(d[this._options.y.name]))
-                          .defined(d => d[this._options.y.name])
+                          .defined(d => d[this._options.y.name] !== null)
                           .x(d => this.x(d[this._options.x.name])));
             };
             if (this._options.type == "bar") {

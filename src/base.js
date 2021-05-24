@@ -36,7 +36,7 @@ class GrapherBase {
         this.svg = this.container
             .append("svg")
             .attr("id", this.id + '_svg')
-            .attr('class','grapher')
+            .attr('class',`grapher ${type}`)
             .attr("width", this.svgWidth)
             .attr("height", this.svgHeight);
 
