@@ -284,7 +284,7 @@ class Chart extends GrapherBase {
         
         // Add axis & grid
         this._addX();
-        if (this._options.type == "bar") {
+        if (['bar','stacked-bar'].indexOf(this._options.type) > -1) {
             this._addX2();
         }
         if (this._options.x.label) {
@@ -444,9 +444,15 @@ class Chart extends GrapherBase {
 
     _addX2() {
         // Second X-axis in case of bars
-        this.x2 = d3.scaleBand()
-            .domain(this._options._categories)
-            .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
+        if (this._options.type == "bar") {
+            this.x2 = d3.scaleBand()
+                .domain(this._options._categories)
+                .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
+        } else if (this._options.type == "stacked-bar") {
+            this.x2 = d3.scaleBand()
+                .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
+                .range(this.xRange);
+        }
     }
 
     _addY() {
@@ -641,7 +647,22 @@ class Chart extends GrapherBase {
                 .attr("cx", (d, i) => this.x(d[this._options.x.name]))
                 .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         };
+        if (['stacked-bar'].indexOf(this._options.type) > -1) {
+            this.stackedData = d3.stack().keys(this._options.category.name).value(d => d[this._options.y.name])(this.data);
+            this.g.selectAll("g")
+                .data(this.stackedData)
+                .enter().append("g")
+                .attr("fill", d => this.color(d.key))
+                .selectAll('rect')
+                .data(d => d)
+                .enter().append("rect")
+                .attr("x", d => this.x(d.data.group))
+                .attr('width', this.x2.bandwidth())
+                .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
+                .attr('height', d => Math.abs((this.y(0) || this.y(this.y.domain()[0])) - this.y(d[this._options.y.name])));
+        }
 
+        
         if (this._options.type == "bar" && this.x2.bandwidth() < 1) {
             // Create an alert
             let alertBarZeroWidth = this.g.append("g")

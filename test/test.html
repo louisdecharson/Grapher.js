@@ -153,7 +153,7 @@
              "category": {
                  "name":"Country/Region"
              },
-             "categories": ["France"],
+             "categories": ["France","Italy"],
              "type": "line",
              "grid": {
                  "y": {
@@ -175,7 +175,7 @@
              if (myGraph.options.type == "bar") {
                  myGraph.draw({"type":"dotted-line"});
              } else {
-                 myGraph.draw({"type":"bar"})
+                 myGraph.draw({"type":"stacked-bar"})
              }
          }
          function sliceData() {

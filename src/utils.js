@@ -148,9 +148,9 @@ function splitString(s, n, sep="|") {
  *              {'date':'2020-07-20','temperature':25,'pressure':1020}];
  * longArray = wideToLong(wideArray, ['date']);
  * longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
- *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1016}
- *              {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
- *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}] 
+ *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1016},
+ *              {'date':'2020-07-20', 'field_id':'temperature','field_value':25},
+ *              {'date':'2020-07-20', 'field_id':'pressure','field_value':1020}]
  */
 function wideToLong(wideData,
                   pivotColumns,
@@ -180,6 +180,42 @@ function wideToLong(wideData,
         }
     }
     return longData;
+}
+
+/**
+ * Transform a 'long' array of Dict to 'wide' array, pivoting on some
+ * 'index' columns (keys).
+ * @param {Array} longData data to pivot
+ * @param {Array} index column(s) to pivot on
+ * @param {string} [keyName="field_id"] name of the key for variable name in the long format. 
+ * @param {string} [valueName="field_value"] name of the key for value in the long format
+ * @param {function(Dict)} mapLongElement optional function to be applied on each long element
+ * @example
+ * longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
+ *              {'date':'2020-07-19', 'field_id':'pressure','field_value':1016},
+ *              {'date':'2020-07-20', 'field_id':'temperature','field_value':25},
+ *              {'date':'2020-07-20', 'field_id':'pressure','field_value':1020}] 
+ * longToWide(longArray, 'date', 'field_id', 'field_value');
+ * wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
+ *              {'date':'2020-07-20','temperature':25,'pressure':1020}];
+ */
+function longToWide(longData, index, column='field_id', value='field_value') {
+    let wideData = {} ;
+    indexCols = Array.isArray(index) ? index : [index];
+    for (const el of longData) {
+        let keys = [];
+        for (const i of indexCols) {
+            keys.push(el[i]);
+        }
+        if (! wideData.hasOwnProperty(keys)) {
+            wideData[keys] = {};
+            for (const i of indexCols) {
+                wideData[keys][i] = el[i];
+            }
+        }
+        wideData[keys][el[column]] = el[value];
+    }
+    return Object.values(wideData);
 }
 
 /**
