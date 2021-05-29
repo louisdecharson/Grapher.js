@@ -371,6 +371,8 @@
      * @param {Array<number>|null} [options.x.domain=null] - Hardcode the x-axis bound. 
      * Default is to use min and max of x values in options.data
      * @param {Boolean} [options.x.nice=true] - Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see {@link https://github.com/d3/d3-scale#continuous_nice|d3-scale on Github}
+     * @param {number|null} [options.x.padding] - Padding to be used between bars when x.scale is scaleBand.
+     * @param {Array<string>|null} [options.x.values] - List of values of x axis. Derived from the data if not provided.
      * @param {Object} options.y - Set of options for the y axis
      * @param {string} [options.y.name=x] name of the y-axis variable in options.data
      * @param {string} [options.y.scale="scaleLinear"] d3-scale, see {@link https://github.com/d3/d3-scale|d3-scale on Github}
@@ -383,7 +385,7 @@
      * @param {string|null} [options.category.name=null] name of the category variable in options.data
      * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
      * @param {Array<string>|Boolean} [options.categories=false] - Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered.
-     * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
+     * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "stacked-bar", "stacked-area", "dotted-line", "dot", "sparkline"
      * @param {Object} options.style list of options for styling the elements of the graph
      * @param {Array<string>} options.style.colors List of colors for the lines, bars, dots (not applicable for sparkline).
      *    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]

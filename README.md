@@ -109,33 +109,37 @@ npm run doc
 -   [wideToLong](#widetolong)
     -   [Parameters](#parameters-7)
     -   [Examples](#examples-1)
--   [barycenterColor](#barycentercolor)
+-   [longToWide](#longtowide)
     -   [Parameters](#parameters-8)
--   [getBackgroundColor](#getbackgroundcolor)
+    -   [Examples](#examples-2)
+-   [barycenterColor](#barycentercolor)
     -   [Parameters](#parameters-9)
--   [GrapherBase](#grapherbase)
+-   [getBackgroundColor](#getbackgroundcolor)
     -   [Parameters](#parameters-10)
+-   [GrapherBase](#grapherbase)
+    -   [Parameters](#parameters-11)
     -   [wipe](#wipe)
     -   [downloadData](#downloaddata)
 -   [Chart](#chart)
-    -   [Parameters](#parameters-11)
-    -   [Examples](#examples-2)
-    -   [draw](#draw)
-        -   [Parameters](#parameters-12)
--   [margin](#margin)
-    -   [Parameters](#parameters-13)
--   [margin](#margin-1)
-    -   [Parameters](#parameters-14)
--   [options](#options)
-    -   [Parameters](#parameters-15)
--   [draw](#draw-1)
-    -   [Parameters](#parameters-16)
--   [Donut](#donut)
-    -   [Parameters](#parameters-17)
+    -   [Parameters](#parameters-12)
     -   [Examples](#examples-3)
--   [Gauge](#gauge)
+    -   [draw](#draw)
+        -   [Parameters](#parameters-13)
+-   [margin](#margin)
+    -   [Parameters](#parameters-14)
+-   [margin](#margin-1)
+    -   [Parameters](#parameters-15)
+-   [options](#options)
+    -   [Parameters](#parameters-16)
+-   [draw](#draw-1)
+    -   [Parameters](#parameters-17)
+-   [Donut](#donut)
     -   [Parameters](#parameters-18)
     -   [Examples](#examples-4)
+    -   [\_draw](#_draw)
+-   [Gauge](#gauge)
+    -   [Parameters](#parameters-19)
+    -   [Examples](#examples-5)
 
 ### findTimeFormat
 
@@ -153,6 +157,9 @@ Return unique values of an array (including if there are dates)
 
 #### Parameters
 
+-   `array`  
+-   `sorting` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** whether to sort the array (optional, default `true`)
+-   `_sort` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** sorting function (optional, default `undefined`)
 -   `arr` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array
 
 #### Examples
@@ -248,9 +255,36 @@ wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
              {'date':'2020-07-20','temperature':25,'pressure':1020}];
 longArray = wideToLong(wideArray, ['date']);
 longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
-             {'date':'2020-07-19', 'field_id':'pressure','field_value':1016}
-             {'date':'2020-07-19', 'field_id':'temperature','field_value':25}
-             {'date':'2020-07-19', 'field_id':'pressure','field_value':1020}]
+             {'date':'2020-07-19', 'field_id':'pressure','field_value':1016},
+             {'date':'2020-07-20', 'field_id':'temperature','field_value':25},
+             {'date':'2020-07-20', 'field_id':'pressure','field_value':1020}]
+```
+
+### longToWide
+
+Transform a 'long' array of Dict to 'wide' array, pivoting on some
+'index' columns (keys).
+
+#### Parameters
+
+-   `longData` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** data to pivot
+-   `index` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** column(s) to pivot on
+-   `column`   (optional, default `'field_id'`)
+-   `value`   (optional, default `'field_value'`)
+-   `keyName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the key for variable name in the long format. (optional, default `"field_id"`)
+-   `valueName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the key for value in the long format (optional, default `"field_value"`)
+-   `mapLongElement` **function (Dict)** optional function to be applied on each long element
+
+#### Examples
+
+```javascript
+longArray = [{'date':'2020-07-19', 'field_id':'temperature','field_value':32},
+             {'date':'2020-07-19', 'field_id':'pressure','field_value':1016},
+             {'date':'2020-07-20', 'field_id':'temperature','field_value':25},
+             {'date':'2020-07-20', 'field_id':'pressure','field_value':1020}] 
+longToWide(longArray, 'date', 'field_id', 'field_value');
+wideArray = [{'date':'2020-07-19','temperature':32,'pressure':1016},
+             {'date':'2020-07-20','temperature':25,'pressure':1020}];
 ```
 
 ### barycenterColor
@@ -319,6 +353,8 @@ that will contain the graph, and other options.
         -   `options.x.domain` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)> | null)** Hardcode the x-axis bound. 
             Default is to use min and max of x values in options.data (optional, default `null`)
         -   `options.x.nice` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see [d3-scale on Github](https://github.com/d3/d3-scale#continuous_nice) (optional, default `true`)
+        -   `options.x.padding` **([number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | null)?** Padding to be used between bars when x.scale is scaleBand.
+        -   `options.x.values` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)> | null)?** List of values of x axis. Derived from the data if not provided.
     -   `options.y` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Set of options for the y axis
         -   `options.y.name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** name of the y-axis variable in options.data (optional, default `x`)
         -   `options.y.scale` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** d3-scale, see [d3-scale on Github](https://github.com/d3/d3-scale) (optional, default `"scaleLinear"`)
@@ -331,7 +367,7 @@ that will contain the graph, and other options.
         -   `options.category.name` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | null)** name of the category variable in options.data (optional, default `null`)
         -   `options.category.parse` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** function to parse (or format) the category variable when displayed in tooltip (optional, default `(d=>d)`)
     -   `options.categories` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)> | [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))** Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered. (optional, default `false`)
-    -   `options.type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline" (optional, default `"line"`)
+    -   `options.type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** type of the graph. Possible types are "line", "bar", "stacked-bar", "stacked-area", "dotted-line", "dot", "sparkline" (optional, default `"line"`)
     -   `options.style` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** list of options for styling the elements of the graph
         -   `options.style.colors` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** List of colors for the lines, bars, dots (not applicable for sparkline).
                Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
@@ -485,6 +521,10 @@ let myArc = new g.Donut("myArc",
                         size=100);
 myArc.draw();
 ```
+
+#### \_draw
+
+Return a d3 scale for colors
 
 ### Gauge
 

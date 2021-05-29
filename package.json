@@ -1,6 +1,6 @@
 {
     "name": "Grapher",
-    "version": "1.0.0",
+    "version": "0.2.1",
     "description": "A minimal wrapper around D3.js to do line and bar plots.",
     "author": "Louis de Charsonville",
     "license": "MIT",
