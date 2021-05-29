@@ -13,7 +13,7 @@ function findTimeFormat(str) {
 
 /**
  * Return unique values of an array (including if there are dates)
- * @param {Array} arr - array
+ * @param {Array} array - array
  * @param {boolean} sorting - whether to sort the array
  * @param {function} [_sort=undefined] - sorting function
  * @return {Array} of unique values of 'arr'
