@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var version = "1.0.0";
+var version = "0.2.1";
 
 /**
  * Return the timeformat in d3.timeParse function
@@ -19,7 +19,7 @@ function findTimeFormat(str) {
 
 /**
  * Return unique values of an array (including if there are dates)
- * @param {Array} arr - array
+ * @param {Array} array - array
  * @param {boolean} sorting - whether to sort the array
  * @param {function} [_sort=undefined] - sorting function
  * @return {Array} of unique values of 'arr'
@@ -271,6 +271,33 @@ function getBackgroundColor(el, defaultColor = "rgb(255, 255, 255)") {
         }
     }
     return elBgColor;
+}/**
+ * This function mimics Python pandas function group by.
+ * @param {Array} array - the array to group by
+ * @param {string} key - key to group by with
+ * @param {Array} [colSum=[]] - array of columns to agg by sum
+ * @param {Array} [colCount=[]] - array of columns to agg by count
+ * @param {Array} [colFirst=[]] - array of columns to keep first
+ */
+function groupBy(array, key, colSum = [], colCount = [], colFirst = []) {
+    return d3.nest()
+        .key(d => d[key])
+        .rollup(d => {
+            let out = {};
+            colSum.forEach(k => out[k] = d3.sum(d, v => v[k]));
+            colCount.forEach(k =>out[k] = d.filter(v => v[k] != null).length);
+            colSum.forEach(k => out[k] = d[0][k]);
+            return out;
+        })
+        .entries(array)
+        .map(g => {
+            let out = {};
+            out[key] = g.key;
+            [...colSum,...colCount,...colFirst].forEach(k => {
+                out[k] = g.value[k];
+            });
+            return out;
+        });    
 }
 
 /**
@@ -2044,6 +2071,7 @@ exports.formatTick = formatTick;
 exports.getBackgroundColor = getBackgroundColor;
 exports.getDimensionText = getDimensionText;
 exports.getOptimalPrecision = getOptimalPrecision;
+exports.groupBy = groupBy;
 exports.longToWide = longToWide;
 exports.splitString = splitString;
 exports.to_csv = to_csv;

@@ -116,29 +116,31 @@ npm run doc
     -   [Parameters](#parameters-9)
 -   [getBackgroundColor](#getbackgroundcolor)
     -   [Parameters](#parameters-10)
--   [GrapherBase](#grapherbase)
+-   [groupBy](#groupby)
     -   [Parameters](#parameters-11)
+-   [GrapherBase](#grapherbase)
+    -   [Parameters](#parameters-12)
     -   [wipe](#wipe)
     -   [downloadData](#downloaddata)
 -   [Chart](#chart)
-    -   [Parameters](#parameters-12)
+    -   [Parameters](#parameters-13)
     -   [Examples](#examples-3)
     -   [draw](#draw)
-        -   [Parameters](#parameters-13)
+        -   [Parameters](#parameters-14)
 -   [margin](#margin)
-    -   [Parameters](#parameters-14)
--   [margin](#margin-1)
     -   [Parameters](#parameters-15)
--   [options](#options)
+-   [margin](#margin-1)
     -   [Parameters](#parameters-16)
--   [draw](#draw-1)
+-   [options](#options)
     -   [Parameters](#parameters-17)
--   [Donut](#donut)
+-   [draw](#draw-1)
     -   [Parameters](#parameters-18)
+-   [Donut](#donut)
+    -   [Parameters](#parameters-19)
     -   [Examples](#examples-4)
     -   [\_draw](#_draw)
 -   [Gauge](#gauge)
-    -   [Parameters](#parameters-19)
+    -   [Parameters](#parameters-20)
     -   [Examples](#examples-5)
 
 ### findTimeFormat
@@ -157,10 +159,9 @@ Return unique values of an array (including if there are dates)
 
 #### Parameters
 
--   `array`  
+-   `array` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array
 -   `sorting` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** whether to sort the array (optional, default `true`)
 -   `_sort` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** sorting function (optional, default `undefined`)
--   `arr` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array
 
 #### Examples
 
@@ -310,6 +311,18 @@ is returned.
 
 -   `el` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** DOM element to retrieve bacground color from
 -   `defaultColor` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** color to be returned if no background color is found. (optional, default `"rgb(255, 255, 255)"`)
+
+### groupBy
+
+This function mimics Python pandas function group by.
+
+#### Parameters
+
+-   `array` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array to group by
+-   `key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** key to group by with
+-   `colSum` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array of columns to agg by sum (optional, default `[]`)
+-   `colCount` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array of columns to agg by count (optional, default `[]`)
+-   `colFirst` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** array of columns to keep first (optional, default `[]`)
 
 ### GrapherBase
 

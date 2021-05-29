@@ -267,7 +267,35 @@ function getBackgroundColor(el, defaultColor = "rgb(255, 255, 255)") {
     }
     return elBgColor;
 };
+/**
+ * This function mimics Python pandas function group by.
+ * @param {Array} array - the array to group by
+ * @param {string} key - key to group by with
+ * @param {Array} [colSum=[]] - array of columns to agg by sum
+ * @param {Array} [colCount=[]] - array of columns to agg by count
+ * @param {Array} [colFirst=[]] - array of columns to keep first
+ */
+function groupBy(array, key, colSum = [], colCount = [], colFirst = []) {
+    return d3.nest()
+        .key(d => d[key])
+        .rollup(d => {
+            let out = {};
+            colSum.forEach(k => out[k] = d3.sum(d, v => v[k]));
+            colCount.forEach(k =>out[k] = d.filter(v => v[k] != null).length);
+            colSum.forEach(k => out[k] = d[0][k]);
+            return out;
+        })
+        .entries(array)
+        .map(g => {
+            let out = {};
+            out[key] = g.key;
+            [...colSum,...colCount,...colFirst].forEach(k => {
+                out[k] = g.value[k];
+            });
+            return out;
+        });    
+}
 
 export { findTimeFormat, unique, getOptimalPrecision, formatTick, updateDict,
          getDimensionText, to_csv, splitString, wideToLong, longToWide, barycenterColor,
-         getBackgroundColor }
+         getBackgroundColor, groupBy }
