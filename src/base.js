@@ -40,10 +40,6 @@ class GrapherBase {
             .attr("width", this.svgWidth)
             .attr("height", this.svgHeight);
 
-        // Create margins
-        this._margin = {};
-        this.margin = {};
-
         // Define style & color from current element:
         this._style = {
             "color": window.getComputedStyle(this.el).color,
@@ -51,6 +47,10 @@ class GrapherBase {
             "fontSize": parseFloat(window.getComputedStyle(this.el).fontSize),
         };
         
+        // Create margins
+        this._margin = {};
+        this.margin = {};
+
     }
     /**
      * Wipe the graph elements created by draw without removing the core elements

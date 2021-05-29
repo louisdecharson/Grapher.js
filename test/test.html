@@ -172,11 +172,25 @@
          myGraph.draw();
 
          function switchBarLine() {
-             if (myGraph.options.type == "bar") {
-                 myGraph.draw({"type":"dotted-line"});
+             if (myGraph.options.type.includes("bar")) {
+                 myGraph.draw({"type":"dotted-line",
+                               "x": {"scale": "scaleTime"},
+                               "y": {"domain": [-5, 10]}});
              } else {
-                 myGraph.draw({"type":"stacked-bar"})
+                 myGraph.draw({"type":"bar"});
              }
+         }
+         function makeBar() {
+             myGraph.draw(
+                     {"type":"stacked-bar",
+                      "y":{
+                          "domain": null
+                      },
+                      "x": {
+                          "scale": "scaleBand",
+                          "padding": 0.1
+                      }
+             });
          }
          function sliceData() {
              data = data.slice(1);

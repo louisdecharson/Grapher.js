@@ -18,6 +18,8 @@ class Grapher {
         case "line":
         case "bar":
         case "barline":
+        case "stacked-bar":
+        case "stacked-area":
             return new Chart(id, type, ...configuration);
             break;
         case "donut":

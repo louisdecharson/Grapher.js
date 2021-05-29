@@ -14,6 +14,8 @@ function findTimeFormat(str) {
 /**
  * Return unique values of an array (including if there are dates)
  * @param {Array} arr - array
+ * @param {boolean} sorting - whether to sort the array
+ * @param {function} [_sort=undefined] - sorting function
  * @return {Array} of unique values of 'arr'
  * 
  * @example
@@ -22,15 +24,22 @@ function findTimeFormat(str) {
  * > [1, 2, 3]
  * 
  */
-function unique(arr) {
-    if (arr.every(e => e instanceof Date)) {
+function unique(array, sorting=true, _sort=undefined) {
+    let uniqueArray = array;
+    if (array.every(e => e instanceof Date)) {
         let sortDate = (a,b) => a == b ? 0 : a > b ? 1 : -1;
-        return [...new Set(arr.map(r => r.getTime()))].map((r)=>(new Date(r))).sort(sortDate);
-    } else if (arr.every(e => typeof e == "number")){
-        return Array.from(new Set(arr)).sort((a,b) => a-b);
+        _sort = _sort || sortDate;
+        uniqueArray = [...new Set(array.map(r => r.getTime()))].map((r)=>(new Date(r)));
+    } else if (array.every(e => typeof e == "number")){
+        _sort = _sort || ((a, b) => a - b);
+        uniqueArray = Array.from(new Set(array));
     } else {
-        return Array.from(new Set(arr)).sort();
+        uniqueArray = Array.from(new Set(array));
     }
+    if (sorting) {
+        return uniqueArray.sort(_sort);
+    }
+    return uniqueArray;
 }
 
 /**
@@ -201,7 +210,7 @@ function wideToLong(wideData,
  */
 function longToWide(longData, index, column='field_id', value='field_value') {
     let wideData = {} ;
-    indexCols = Array.isArray(index) ? index : [index];
+    let indexCols = Array.isArray(index) ? index : [index];
     for (const el of longData) {
         let keys = [];
         for (const i of indexCols) {
@@ -260,5 +269,5 @@ function getBackgroundColor(el, defaultColor = "rgb(255, 255, 255)") {
 };
 
 export { findTimeFormat, unique, getOptimalPrecision, formatTick, updateDict,
-         getDimensionText, to_csv, splitString, wideToLong, barycenterColor,
+         getDimensionText, to_csv, splitString, wideToLong, longToWide, barycenterColor,
          getBackgroundColor }

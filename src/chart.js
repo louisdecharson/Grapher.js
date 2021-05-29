@@ -1,5 +1,5 @@
 import { GrapherBase } from "./base.js";
-import { updateDict, unique, findTimeFormat, splitString } from "./utils.js";
+import { updateDict, unique, findTimeFormat, splitString, longToWide } from "./utils.js";
 import { colorPalette } from "./defaults.js";
 
 /**
@@ -22,6 +22,8 @@ import { colorPalette } from "./defaults.js";
  * @param {Array<number>|null} [options.x.domain=null] - Hardcode the x-axis bound. 
  * Default is to use min and max of x values in options.data
  * @param {Boolean} [options.x.nice=true] - Extends the domain so that it starts and ends on nice round values (applying d3.nice()), for further reference see {@link https://github.com/d3/d3-scale#continuous_nice|d3-scale on Github}
+ * @param {number|null} [options.x.padding] - Padding to be used between bars when x.scale is scaleBand.
+ * @param {Array<string>|null} [options.x.values] - List of values of x axis. Derived from the data if not provided.
  * @param {Object} options.y - Set of options for the y axis
  * @param {string} [options.y.name=x] name of the y-axis variable in options.data
  * @param {string} [options.y.scale="scaleLinear"] d3-scale, see {@link https://github.com/d3/d3-scale|d3-scale on Github}
@@ -34,7 +36,7 @@ import { colorPalette } from "./defaults.js";
  * @param {string|null} [options.category.name=null] name of the category variable in options.data
  * @param {function} [options.category.parse=(d => d)] function to parse (or format) the category variable when displayed in tooltip
  * @param {Array<string>|Boolean} [options.categories=false] - Hardcode the list of elements of the 'category' variable to select only data's elements belonging to this list. When no list is specified, the list of elements is derived from the data and all 'category' values found in the data are considered.
- * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "dotted-line", "dot", "sparkline"
+ * @param {string} [options.type="line"] type of the graph. Possible types are "line", "bar", "stacked-bar", "stacked-area", "dotted-line", "dot", "sparkline"
  * @param {Object} options.style list of options for styling the elements of the graph
  * @param {Array<string>} options.style.colors List of colors for the lines, bars, dots (not applicable for sparkline).
  *    Default is ["#1abb9b","#3497da","#9a59b5","#f0c30f","#e57e22","#e64c3c","#7f8b8c","#CC6666", "#9999CC", "#66CC99"]
@@ -102,13 +104,14 @@ class Chart extends GrapherBase {
         super(id, type, width, height);
         
         // Set default options and update with options pass by user
-        this._options = this._defaultOptions();
+        this._options = this._defaultOptions(type);
         
         // Update options
         this.options = options;
 
         // Check if type is sparkline
         this.isSparkline = this.type.includes("sparkline");
+        this.isBar = this.type.includes("bar");
     }
     
     /**
@@ -131,9 +134,9 @@ class Chart extends GrapherBase {
                 bottom,
                 left=(x) => x < 400 ? 40 : 60}={}){
         this._margin = {"top": top,
-                            "right": typeof right == "function" ? right(this.svgWidth) : right,
-                            "bottom": bottom || this._style.fontSize*2 + 20,
-                            "left": typeof left == "function" ? left(this.svgWidth) : left};
+                        "right": typeof right == "function" ? right(this.svgWidth) : right,
+                        "bottom": bottom || this._style.fontSize*2 + 20,
+                        "left": typeof left == "function" ? left(this.svgWidth) : left};
         this._innerDimensions();
     }
 
@@ -219,9 +222,24 @@ class Chart extends GrapherBase {
         // set margins
         this.margin = {left:(this._options.y.label ? 80 : 60), bottom: (this._options.x.label ? this._style.fontSize*2 + 20 : 40)};
 
-        // // Copy some sparkline config to style
+        // Copy some sparkline config to style
         if (this.isSparkline) {
             this._options.style.strokeWidth = this._options.sparkline.strokeWidth;
+        }
+        // Check if type is bar
+        this.isBar = this._options.type.includes("bar");
+
+        // If stacked-bar
+        if (this._options.type.includes("stacked") && (! this.stackedData || opt.data )) {
+            this.wideData = longToWide(this.data,
+                                       this._options.x.name,
+                                       this._options.category.name,
+                                       this._options.y.name);
+            this.stackedData = (d3.stack()
+                                .keys(this._options.categories || unique(this.data.map(d => d[this._options.category.name])))
+                                .value((d, key) => d[key] || 0)
+                                .offset(d3.stackOffsetDiverging)
+                                (this.wideData));
         }
     }
     _parseData() {
@@ -284,7 +302,7 @@ class Chart extends GrapherBase {
         
         // Add axis & grid
         this._addX();
-        if (['bar','stacked-bar'].indexOf(this._options.type) > -1) {
+        if (this.isBar) {
             this._addX2();
         }
         if (this._options.x.label) {
@@ -315,7 +333,7 @@ class Chart extends GrapherBase {
 
     // Graph internal methods
     // =======================
-    _defaultOptions() {
+    _defaultOptions(type) {
         return {
             "data": [],
             "x": {
@@ -325,7 +343,9 @@ class Chart extends GrapherBase {
                 "parse": null,
                 "label": null,
                 "domain": null,
-                "nice": false
+                "nice": false,
+                "padding": null,
+                "values": null
             },
             "y": {
                 "name": "y",
@@ -341,7 +361,7 @@ class Chart extends GrapherBase {
                 "parse": d => d
             },
             "categories": false,
-            "type": "line",
+            "type": type,
             "style": {
                 "colors": colorPalette,
                 "barWidth": 0.8,
@@ -396,20 +416,52 @@ class Chart extends GrapherBase {
         element.attr('style', Object.entries(style).map(d => d.join(":")).join(";"));
         return style;
     }
+    _getXDomain() {
+        if (this._options.x.domain) {
+            return this._options.x.domain;
+        } else {
+            if (['scaleBand','scaleOrdinal'].indexOf(this._options.x.scale) > -1) {
+                return this.xValues;
+            } else {
+                return this.extent(this._options.x.name, this._options.x.scale);
+            }
+        }
+    }
+    _scaleBandInvert(_) {
+        let domainIndex,
+            n = this.domain().length,
+            reverse = this.range()[1] < this.range()[0],
+            start = this.range()[reverse - 0],
+            stop = this.range()[1 - reverse];
+
+        if (_ < start + this.paddingOuter() * this.step()) domainIndex = 0;
+        else if (_ > stop - this.paddingOuter() * this.step()) domainIndex = n - 1;
+        else domainIndex = Math.floor((_ - start - this.paddingOuter() * this.step()) / this.step());
+        return this.domain()[domainIndex];
+    };
     _addX() {
         // (i) Find the width
-        this.xValues = unique(this.data.map(d => d[this._options.x.name]));
+        this.xValues = this._options.x.values || unique(this.data.map(d => d[this._options.x.name]));
         this.xNbValues = this.xValues.length;
         this.xWidth = this.innerWidth / this.xNbValues;
-        this.xRange = this._options.type == "bar" ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
+        this.xRange = this.isBar ? [this.xWidth/2, this.innerWidth - this.xWidth/2] : [0, this.innerWidth];
         this.xNbTicks = d3.min([parseInt((this.svgWidth - 100) / 100), this.xNbValues]);
         this.x = d3[this._options.x.scale]()
-            .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
+            .domain(this._getXDomain())
             .range(this.xRange);
-
+        if (this._options.x.padding && this._options.x.scale == "scaleBand") {
+            this.x = this.x.padding(this._options.x.padding);
+        }
         if (this._options.x.nice) {
             this.x = this.x.nice();
         }
+        // Add offset to allow tooltip vertical line to cut bars in the middle
+        this._xLineOffset = this._options.type.includes('stacked') ? this.x.bandwidth() / 2 : 0;
+        
+        // Add invert if needed
+        if ( !this.x.invert) {
+            this.x.invert = this._scaleBandInvert;
+        }  
 
         // add X axis to svg
         this.g.append("g")
@@ -418,9 +470,10 @@ class Chart extends GrapherBase {
             .call(d3.axisBottom(this.x)
                   .ticks(this.xNbTicks)
                   .tickFormat(this._options.x.tickFormat)
+                  .tickSizeOuter(0)
                  );
         // in case of bars, x-axis doesn't fill the width
-        if (this._options.type == "bar") {
+        if (this.isBar) {
             this.g.append("g")
                 .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.innerHeight + 0.5})`)
@@ -448,19 +501,26 @@ class Chart extends GrapherBase {
             this.x2 = d3.scaleBand()
                 .domain(this._options._categories)
                 .rangeRound([-this.xWidth/2*this._options.style.barWidth, this.xWidth/2*this._options.style.barWidth]);
-        } else if (this._options.type == "stacked-bar") {
-            this.x2 = d3.scaleBand()
-                .domain((this._options.x.domain ? this._options.x.domain : this.extent(this._options.x.name, this._options.x.scale)))
-                .range(this.xRange);
         }
     }
-
+    _getYDomain() {
+        if (this._options.y.domain) {
+            return this._options.y.domain;
+        } else {
+            if (this._options.type.includes('stacked')) {
+                return [d3.min(this.stackedData, d => d3.min(d, e => e[0])),
+                        d3.max(this.stackedData, d => d3.max(d, e => e[0]))];
+            } else {
+                return this.extent(this._options.y.name, this._options.y.scale, this._options.type == "bar");
+            }
+        }
+    }
     _addY() {
         this.yVar = this._options.y.name;
         
         // Define Y Axis
         this.y = d3[this._options.y.scale]()
-            .domain(this._options.y.domain ? this._options.y.domain : this.extent(this._options.y.name, this._options.y.scale, this._options.type == "bar"))
+            .domain(this._getYDomain())
             .range([this.innerHeight, 0]);
 
         if (this._options.y.nice) {
@@ -477,7 +537,7 @@ class Chart extends GrapherBase {
             this._addYGrid();
         }
         // Add horizontal line at X = 0
-        if (this.y.domain()[0] < 0 && this._options.type == "bar") {
+        if (this.y.domain()[0] < 0 && this.isBar) {
             this.g.append("g")
                 .attr("class","x axis")
                 .attr("transform", `translate(0, ${this.y(0)})`)
@@ -647,19 +707,45 @@ class Chart extends GrapherBase {
                 .attr("cx", (d, i) => this.x(d[this._options.x.name]))
                 .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         };
-        if (['stacked-bar'].indexOf(this._options.type) > -1) {
-            this.stackedData = d3.stack().keys(this._options.category.name).value(d => d[this._options.y.name])(this.data);
-            this.g.selectAll("g")
+        if (this._options.type == "stacked-bar") {
+            this.g.append("g")
+                .attr("class","stackedBar")
+                .selectAll("g.stackedBar")
                 .data(this.stackedData)
-                .enter().append("g")
+                .join("g")
                 .attr("fill", d => this.color(d.key))
                 .selectAll('rect')
                 .data(d => d)
-                .enter().append("rect")
-                .attr("x", d => this.x(d.data.group))
-                .attr('width', this.x2.bandwidth())
-                .attr('y', d => d[this._options.y.name] > 0 ? this.y(d[this._options.y.name]) : this.y(0))
-                .attr('height', d => Math.abs((this.y(0) || this.y(this.y.domain()[0])) - this.y(d[this._options.y.name])));
+                .join("rect")
+                .attr('class','bar')
+                .attr("x", d => this.x(d.data[this._options.x.name]))
+                .attr('width', this.x.bandwidth())
+                .attr('y', d => this.y(d[1]))
+                .attr('height', d => Math.abs(this.y(d[0]) - this.y(d[1])))
+                .on("mouseover", function(d) {
+	            d3.select(this).attr("fill", function() {
+                        return d3.rgb(d3.select(this).style("fill")).darker(0.5);
+                    });
+                })
+                .on("mouseout", function(d) {
+	            d3.select(this).attr("fill", function() {
+                        return d3.rgb(d3.select(this).style("fill")).brighter(0.5);
+                    });
+                });
+        }
+        if (this._options.type == "stacked-area") {
+            this.area = d3.area()
+                .x((d) => this.x(d.data[this._options.x.name]))
+                .y0((d) => this.y(d[0] <= d[1] ? d[0] : 0))
+                .y1((d) => this.y(d[0] <= d[1] ? d[1] : d[1]-d[0]));
+            
+            this.g.append("g")
+                .attr("class","stackedArea")
+                .selectAll("g.stackedArea")
+                .data(this.stackedData)
+                .join("path")
+                .attr("fill", d => this.color(d.key))
+                .attr("d", d => this.area(d));
         }
 
         
@@ -695,28 +781,25 @@ class Chart extends GrapherBase {
     _buildTooltip(g, data, mouseX, mouseY) {
         if (! data) return g.style("display","none");
         g.style("display", null);
-
         const xLine = g.selectAll("line")
               .data([null])
               .join("line")
               .attr("class", "tooltip_line")
               .attr('style',`stroke: ${this._options.style.tooltipLineColor};`)
-              .attr("x1", mouseX)
-              .attr("x2", mouseX) 
+              .attr("x1", mouseX + this._xLineOffset)
+              .attr("x2", mouseX + this._xLineOffset)
               .attr("y1", 0)
               .attr("y2", this.innerHeight);
         
-        if (this._options.type != "bar") {
+        if (! this.isBar && ! this._options.type.includes("stacked")) {
             const dots = g.selectAll("circle")
                   .data(data.slice(1))
                   .join("circle")
-            // .style("fill", d => this.isSparkline ? this._options.sparkline["circle-color"] : this.color(d[this._options.category.name]))
                   .style("fill", d => this._options.style.tooltipDotColor(d))
                   .attr("r", this._options.style.tooltipDotSize)
                   .attr("cx", (d, i) => this.x(d[this._options.x.name]))
                   .attr("cy", (d, i) => this.y(d[this._options.y.name]));
         }
-        
         
         // background of tooltip
         const path = g.selectAll("rect")
@@ -738,12 +821,12 @@ class Chart extends GrapherBase {
                   .attr("class","tooltip_text")
                   .style("font-weight","bold")
                   .style("fill",(d, i) => i === 0 ? (typeof this._options.style.tooltipColor == "function" ? this._options.style.tooltipColor() : this._options.style.tooltipColor) : this.color(d[this._options.category.name]))
-                  .text((d,i) => this._options.style.tooltipFormat(d,i)));
+                  .text((d,i) => this._options.style.tooltipFormat(d, i)));
 
         const {xx, yy, width: w, height: h} = text.node().getBBox();
 
         // Make sure the tooltip is always in the graph area (and visible)
-        let text_x = w + mouseX + 10 > this.innerWidth ? mouseX - w - 10 : mouseX + 10,
+        let text_x = w + mouseX + this._xLineOffset + 10 > this.innerWidth ? mouseX + this._xLineOffset - w - 10 : mouseX + this._xLineOffset + 10,
             text_y = mouseY - 20 < 0 ? mouseY + 20 : mouseY + h - 10 > this.innerHeight ? this.innerHeight - h + 10: mouseY;
         text.attr("transform", `translate(${text_x},${text_y})`);
         
@@ -762,8 +845,7 @@ class Chart extends GrapherBase {
             a = mouseIndex > 0 ? this.xValues[mouseIndex - 1] : 0,
             b = mouseIndex > this.xValues.length - 1 ? this.xValues.slice(-1)[0] : this.xValues[mouseIndex];
         // We get value before mouseIndex and at mouseIndex to find out to which value mouse is the closest;
-
-        let mouseXValue = mouseXValue_ - a > b - mouseXValue_ ? b : a,
+        let mouseXValue = typeof(mouseXValue_) === "string" ? mouseXValue_ : mouseXValue_ - a > b - mouseXValue_ ? b : a,
             mouseYValues = this.data.filter(d => d[this._options.x.name].toString() == mouseXValue.toString())
             .sort((a,b) => b[this._options.y.name] - a[this._options.y.name]);
         return [mouseXValue].concat(mouseYValues);
